@@ -2,7 +2,6 @@
 A Sphere-Meshes based hunman body model with jointed hand
 
 ## Running Enviroment
-To obtain the results shown in the video proper hardware is necessary:
 - **Windows 10**
 - Intel Core **i7-8700 @ 3.2GhZ**
 - Qt 5.13.1
@@ -24,4 +23,14 @@ in `CMakeLists.txt`
 * **press 0**: a dialog of tunning the body
 * **press 1**: a dialog of tunning the right hand
 * **press 2**: a dialog of tunning the left hand
+
+## Model Introduce
+
+![Body](docs/body.png)
+
+The body's structure is similar to the OpenPose, we add 13-20 centers to simulate the arm.
+
+![Hand](docs/hand.png)
+
+This hand model is the same as [HModel](https://github.com/OpenGP/hmodel). Actually our work is based on their work.
 
