@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     ui::GLWindow window;
     window.resize(1600, 900);
 
-    std::string project_path = "E:/Code/C/SModel/project";
+    std::string project_path = "E:/Code/GitHub/SModel/project";
 
     // 坐标轴渲染
     QString vshader((project_path + "/ui/shaders/simple3D_vs.glsl").c_str());

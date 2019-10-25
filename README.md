@@ -15,7 +15,8 @@ A Sphere-Meshes based hunman body model with jointed hand
 
 in `CMakeLists.txt`
 
-* `set (CMAKE_PREFIX_PATH ...)` to your Qt path and make sure you have already add the environment value
+* `set (CMAKE_PREFIX_PATH ...)` to your Qt path and make sure you have already added the environment value
+* modify the `main.cpp`, set the `project_path` to your project
 * we have put the third party library in the folder **external**
 
 ### Display
@@ -23,6 +24,10 @@ in `CMakeLists.txt`
 * **press 0**: a dialog of tunning the body
 * **press 1**: a dialog of tunning the right hand
 * **press 2**: a dialog of tunning the left hand
+
+### Running Result
+
+![Result](docs/result.png)
 
 ## Model Introduce
 
