@@ -58,17 +58,25 @@ void GLWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void GLWindow::mouseReleaseEvent(QMouseEvent *event) {
-    camera.SetInitialDirection();
+    camera.SetBaseDirection();
     is_mouse_pressing = false;
 }
 
-void GLWindow::mouseMoveEvent(QMouseEvent *event) {
-    if (event->buttons() == Qt::LeftButton) {
-        float xoffset = (float)event->x() - (float)cursor_pos.x;
-        float yoffset = (float)event->y() - (float)cursor_pos.y;
-        camera.ProcessMouseMovement(xoffset, yoffset);
-        this->update();
+void GLWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+    // alt + LB
+    if (QApplication::keyboardModifiers() == Qt::AltModifier && event->button() == Qt::LeftButton) {
+        camera.Reset(camera_center, model_center, camera.GetCameraType());
     }
+    this->update();
+}
+
+void GLWindow::mouseMoveEvent(QMouseEvent *event) {
+    float xoffset = (float)event->x() - (float)cursor_pos.x;
+    float yoffset = (float)event->y() - (float)cursor_pos.y;
+    if (event->buttons() == Qt::LeftButton) {
+        camera.ProcessPerspective(xoffset, yoffset);
+    }
+    this->update();
 }
 
 void GLWindow::keyPressEvent(QKeyEvent *event) {
@@ -82,7 +90,38 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_2:
         this->pannel_ctrl_->ShowLeftHandPannel(this->models["LeftHand"]);
         break;
+    case Qt::Key_Alt:
+        this->camera.SetCameraType(CameraType::kFocus);
+        this->camera.UpdateCameraVectors();
+        break;
+    // 镜头漫游
+    case Qt::Key_W:
+        camera.ProcessMovement(CameraMovement::kForward);
+        break;
+    case Qt::Key_S:
+        camera.ProcessMovement(CameraMovement::kBackward);
+        break;
+    case Qt::Key_A:
+        camera.ProcessMovement(CameraMovement::kLeft);
+        break;
+    case Qt::Key_D:
+        camera.ProcessMovement(CameraMovement::kRight);
+        break;
     default:
         break;
     }
+    this->update();
 }
+
+void GLWindow::keyReleaseEvent(QKeyEvent *event) {
+    switch (event->key()) {
+    case Qt::Key_Alt:
+        this->camera.SetCameraType(CameraType::kFree);
+        this->camera.UpdateCameraVectors();
+        break;
+    default:
+        break;
+    }
+    this->update();
+}
+
