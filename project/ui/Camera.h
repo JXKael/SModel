@@ -12,10 +12,8 @@ namespace ui {
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum CameraMovement {
-    kForward = 0,
-    kBackward,
-    kLeft,
-    kRight
+    kUDLR = 0,  // up & down & left & right
+    kFB = 1     // forward & back
 };
 
 enum CameraType {
@@ -27,9 +25,9 @@ enum CameraType {
 const glm::vec3 POSITION = glm::vec3(0.0f, 0.0f, 100.0f);
 const glm::vec3 FOCUS_POSITION = glm::vec3(0.0f, 0.0f, 0.0f);
 const float YAW = 90.0f;
-const float PITCH = 0.0f;
+const float PITCH = 0.95493f;
 const float SENSITIVITY = 0.1f; // 旋转镜头
-const float SPEED = 10.0f; // 平移镜头
+const float SPEED = 0.7f; // 平移镜头
 const float FOVY = 45.0f;
 const float NEAR_PLANE = 0.1f;
 const float FAR_PLANE = 10000.0f;
@@ -112,43 +110,39 @@ public:
         return glm::lookAt(position, position + front, up);
     }
 
-    // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void ProcessPerspective(float xoffset = 0.0f, float yoffset = 0.0f, GLboolean constrain_pitch = true) {
-        switch (camera_type) {
-        case kFocus:
-            processFocusPerspective(xoffset, yoffset, constrain_pitch);
+        yaw = yaw_base + xoffset * mouse_sensitivity;
+        pitch = pitch_base + yoffset * mouse_sensitivity;
+
+        if (constrain_pitch) pitch = constrainPitch(pitch);
+
+        UpdateCameraVectors();
+    }
+
+    void ProcessMovement(CameraMovement move_type, glm::vec2 offset) {
+        switch (move_type) {
+        case kUDLR:
+            {
+                glm::vec3 lr = -offset.x * movement_speed * right;
+                glm::vec3 ud = offset.y * movement_speed * up;
+                glm::vec3 move = lr + ud;
+                position = position_base + move;
+            }
             break;
-        case kFree:
-            processFreePerspective(xoffset, yoffset, constrain_pitch);
+        case kFB:
+            {
+                float ratio = (offset.x + offset.y) / glm::sqrt(glm::pow(offset.x, 2) + glm::pow(offset.y, 2));
+                position = position_base + ratio * glm::length(offset) * front;
+            }
             break;
         default:
             break;
         }
     }
 
-    // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void ProcessMovement(CameraMovement direction, float deltaTime = 1.0f) {
-        float velocity = movement_speed * deltaTime;
-        if (direction == kForward)
-            position += front * velocity;
-        if (direction == kBackward)
-            position -= front * velocity;
-        if (direction == kLeft)
-            position -= right * velocity;
-        if (direction == kRight)
-            position += right * velocity;
-
+    void ProcessScroll(float delta) {
+        position = position_base + delta * front;
         SetBasePosition();
-    }
-
-    // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(float yoffset) {
-        if (fovy >= 1.0f && fovy <= 45.0f)
-            fovy -= yoffset;
-        if (fovy <= 1.0f)
-            fovy = 1.0f;
-        if (fovy >= 45.0f)
-            fovy = 45.0f;
     }
 
     // Calculates the front vector from the Camera's (updated) Euler Angles
@@ -166,42 +160,6 @@ public:
     }
 
 private:
-    void processFocusPerspective(float xoffset, float yoffset, GLboolean constrain_pitch) {
-        updateEulerAngles(xoffset, yoffset);
-
-        if (constrain_pitch) pitch = constrainPitch(pitch);
-
-        // std::cout << "yaw: " << yaw << ", pitch: " << pitch << std::endl;
-
-        UpdateCameraVectors();
-        SetBasePosition();
-    }
-
-    void processFreePerspective(float xoffset, float yoffset, GLboolean constrain_pitch) {
-        updateEulerAngles(xoffset, yoffset);
-
-        if (constrain_pitch) pitch = constrainPitch(pitch);
-
-        // std::cout << "yaw: " << yaw << ", pitch: " << pitch << std::endl;
-
-        UpdateCameraVectors();
-    }
-
-    void updateEulerAngles(float xoffset, float yoffset) {
-        switch (camera_type) {
-        case kFocus:
-            yaw = yaw_base + xoffset * mouse_sensitivity;
-            pitch = pitch_base + yoffset * mouse_sensitivity;
-            break;
-        case kFree:
-            yaw = yaw_base - xoffset * mouse_sensitivity;
-            pitch = pitch_base - yoffset * mouse_sensitivity;
-            break;
-        default:
-            break;
-        }
-    }
-
     // Make sure that when pitch is out of bounds, screen doesn't get flipped
     float constrainPitch(float pitch) {
         if (pitch > 89.0f)  pitch = 89.0f;
@@ -211,7 +169,6 @@ private:
 
     void updateFocusCameraVectors() {
         // Calculate the new Front vector
-        float distance = glm::length(focus_position - position);
         glm::vec3 direction(0, 0, 0);
         direction.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
         direction.y = sin(glm::radians(pitch));
@@ -222,21 +179,25 @@ private:
         right = glm::normalize(glm::cross(front, world_up));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         up = glm::normalize(glm::cross(right, front));
 
+        float distance = glm::length(focus_position - position);
         position = distance * direction;
+        SetBasePosition();
     }
 
     void updateFreeCameraVectors() {
         // Calculate the new Front vector
-        glm::vec3 direction;
+        glm::vec3 direction(0, 0, 0);
         direction.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
         direction.y = sin(glm::radians(pitch));
         direction.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-        front = glm::normalize(-direction);
+        front = glm::normalize(glm::vec3(0, 0, 0) - direction);
         // Also re-calculate the Right and Up vector
         right = glm::normalize(glm::cross(front, world_up));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         up = glm::normalize(glm::cross(right, front));
 
-        position = position_base;
+        //float distance = glm::length(glm::vec3(0, 0, 0) - position);
+        //position = distance * direction;
+        //SetBasePosition();
     }
 };
 

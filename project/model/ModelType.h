@@ -11,6 +11,7 @@ namespace smodel {
 #define BLOCK_UNDEFINED 32767
 #define VEC3_DIM 3
 #define MAT4_DIM 4
+#define ROOT_NAME "Root"
 
 typedef Eigen::Vector3f vec3;
 typedef Eigen::Matrix4f mat4;
@@ -49,28 +50,24 @@ struct Sphere {
     float radius;
     vec3 position;
     SphereType type;
-    int attached_bone_id;
+
+    Bone *bone;
 
     Bone *attached_bone;
     vec3 offset; // offset to it's attached Bones's center
 
-    Sphere() : id(-1), name(""), radius(0.0f), position(vec3::Zero()), type(kCenter), attached_bone_id(-1)
-    {
+    Sphere() : id(-1), name(""), radius(0.0f), position(vec3::Zero()), type(kCenter) {
+        bone = nullptr;
         attached_bone = nullptr;
         offset = vec3::Zero();
     }
-    Sphere(int _id, std::string _name, float _radius, vec3 _position, SphereType _type, int _attached_bone_id)
-      : id(_id),
-        name(_name),
-        radius(_radius),
-        position(_position),
-        type(_type),
-        attached_bone_id(_attached_bone_id)
-    {
+    Sphere(int _id, std::string _name, float _radius, vec3 _position, SphereType _type)
+      : id(_id), name(_name), radius(_radius), position(_position), type(_type) {
+        bone = nullptr;
         attached_bone = nullptr;
         offset = vec3::Zero();
     }
-    bool isAttachment() { return type == SphereType::kAttachment && attached_bone_id >= 0; }
+    const bool isAttachment() const { return type == SphereType::kAttachment; }
 };
 
 // 骨骼
@@ -79,9 +76,8 @@ struct Bone {
     std::string name;
     int center_id;
     int parent_id;
-    std::vector<int> children_ids;
     std::vector<int> attachment_ids;
-    
+
     Center *center; // 该骨骼的root sphere
     Bone *parent;
     std::vector<Bone *> children;
@@ -95,8 +91,7 @@ struct Bone {
     mat4 local; // 相对于parent_id的坐标，由init_local赋值，随后根据theta变化
     mat4 global; // global矩阵
 
-    Bone() : id(-1), name(""), center_id(-1), parent_id(-1)
-    {
+    Bone() : id(-1), name(""), center_id(-1), parent_id(-1) {
         center = nullptr;
         parent = nullptr;
         length = 0.0f;
@@ -106,16 +101,8 @@ struct Bone {
         local = mat4::Identity();
         global = mat4::Identity();
     }
-    Bone(int _id, std::string _name, int _center_id, int _parent_id,
-         std::vector<int> _children_ids, std::vector<int> _attachment_ids,
-         mat4 _init_local)
-        : id(_id),
-        name(_name),
-        center_id(_center_id),
-        parent_id(_parent_id),
-        children_ids(_children_ids),
-        attachment_ids(_attachment_ids),
-        init_local(_init_local)
+    Bone(int _id, std::string _name, int _center_id, int _parent_id, std::vector<int> _attachment_ids, mat4 _init_local)
+        : id(_id), name(_name), center_id(_center_id), parent_id(_parent_id), attachment_ids(_attachment_ids), init_local(_init_local)
     {
         center = nullptr;
         parent = nullptr;
@@ -125,10 +112,10 @@ struct Bone {
         local = mat4::Identity();
         global = mat4::Identity();
     }
-    bool isModelRoot() { return parent_id == -1; }
-    bool hasParent() { return parent_id >= 0; }
-    bool hasChildren() { return !children_ids.empty(); }
-    bool hasAttachments() { return !attachment_ids.empty(); }
+    const bool isModelRoot() const { return parent_id == -1; }
+    const bool hasParent() const { return parent_id >= 0; }
+    const bool hasChildren() const { return !children.empty(); }
+    const bool hasAttachments() const { return !attachment_ids.empty(); }
 };
 
 // 自由度
@@ -145,39 +132,29 @@ struct Dof {
     vec3 axis;
     Bone *bone;
 
-    Dof() : id(-1), name(""), type(kRotation), axis_type(kX), bone_id(-1), min(-1.0f), max(1.0f), init_val(0.0f)
+    Dof() : id(-1), name(""), type(kRotation), axis_type(kX), min(-1.0f), max(1.0f), init_val(0.0f), bone_id(-1)
     {
-        switch (axis_type) {
-        case kX:
-            axis = vec3::UnitX(); break;
-        case kY:
-            axis = vec3::UnitY(); break;
-        case kZ:
-            axis = vec3::UnitZ(); break;
-        default:
-            axis = vec3::Zero(); break;
-        }
+        axis = ParseToVec(axis_type);
         bone = nullptr;
     }
-    Dof(int _id, std::string _name, DofType _type, AxisType _axis_type, int _bone_id, float _min, float _max, float _init_val)
+    Dof(int _id, std::string _name, DofType _type, AxisType _axis_type, float _min, float _max, float _init_val, int _bone_id)
       : id(_id),
         name(_name),
         type(_type),
         axis_type(_axis_type),
-        bone_id(_bone_id),
-        min(_min), max(_max), init_val(_init_val)
+        min(_min), max(_max), init_val(_init_val),
+        bone_id(_bone_id)
     {
-        switch (axis_type) {
-        case kX:
-            axis = vec3::UnitX(); break;
-        case kY:
-            axis = vec3::UnitY(); break;
-        case kZ:
-            axis = vec3::UnitZ(); break;
-        default:
-            axis = vec3::Zero(); break;
-        }
+        axis = ParseToVec(axis_type);
         bone = nullptr;
+    }
+    vec3 ParseToVec(AxisType axis_type) {
+        switch (axis_type) {
+        case kX: return vec3::UnitX();
+        case kY: return vec3::UnitY();
+        case kZ: return vec3::UnitZ();
+        default: return vec3::Zero();
+        }
     }
 };
 

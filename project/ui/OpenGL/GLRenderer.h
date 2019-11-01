@@ -64,22 +64,26 @@ public:
     virtual void SetVertices(const std::vector<float> &vertices);
     virtual void AddVertices(const std::vector<float> &vertices);
     virtual void AddTexture(const std::string &tex_name, const QString &tex_path);
-    virtual void LoadTextures();
     virtual void ClearVertices();
     virtual void ClearTextures();
 
     virtual void BindStaticDrawData();
+    virtual void BindDynamicDrawData();
 
     // Call this function to draw everything
     virtual void PaintGL();
-    virtual void ActiveTexture();
     virtual void Draw();
 
     virtual void PassVerticesToShader();
     virtual void PassVertexColorToShader();
     virtual void PassTexcoordToShader();
+
+    virtual void LoadTextures();
     virtual void PassTextureToShader();
+
+    virtual void PassDynamicVerticesToShader();
     virtual void PassMVPToShader();
+    virtual void ActiveTexture();
     virtual void PassOtherToShader();
 };
 

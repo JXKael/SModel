@@ -50,26 +50,25 @@ private:
 
     // 结构树
     QTreeWidget *tree;
-    TreeItemType tree_item_type;
     int selected_boneid = -1;
     int selected_centerid = -1;
 
 public:
     void Init();
-    void UpdateGL(const smodel::Thetas &/*thetas*/);
-    void ApplyAs(const smodel::Thetas &/*thetas*/);
+    void UpdateGL(const smodel::Thetas &thetas);
+    void ApplyAs(const smodel::Thetas &thetas);
 private:
     void InitDofs();
     QGridLayout *InitThetasPannel();
     QGridLayout *InitTreePannel();
-    void AddBoneTreeItem(const smodel::Bone &/*bone*/, QTreeWidgetItem */*parentItem*/);
-    void AddAttachCenters(const smodel::Bone &/*bone*/, QTreeWidgetItem */*parentItem*/);
+    void AddBoneTreeItem(const smodel::Bone &bone, QTreeWidgetItem *parentItem);
+    void AddAttachCenters(const smodel::Bone &bone, QTreeWidgetItem *parentItem);
     void ConnectMapper();
-    void ClampTheta(float */*theta*/, int */*slider_val*/, float /*min*/, float /*max*/);
+    void ClampTheta(float *theta, int *slider_val, float min, float max);
 
 private slots :
-    void sliderHandler(int /*param*/);
-    void editHandler(int /*param*/);
+    void sliderHandler(int param);
+    void editHandler(int param);
     void onTreeItemClicked(QTreeWidgetItem *item, int column);
 };
 

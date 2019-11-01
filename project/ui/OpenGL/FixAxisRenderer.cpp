@@ -12,17 +12,13 @@ FixAxisRenderer::FixAxisRenderer(const QString &vertex_shader, const QString &fr
     SpecialInit();
 }
 
-FixAxisRenderer::~FixAxisRenderer() {
-    this->ClearVertices();
-    vbo.destroy();
-    vao.destroy();
-}
+FixAxisRenderer::~FixAxisRenderer() {}
 
 void FixAxisRenderer::SpecialInit() {
     std::vector<float> axis_vertices = {
         // vertex                 // color
         0.0f,   0.0f,   0.0f,     1.0f, 0.0f, 0.0f,
-        200.0f, 1.0f,   0.0f,     1.0f, 0.0f, 0.0f,
+        200.0f, 0.0f,   0.0f,     1.0f, 0.0f, 0.0f,
 
         0.0f,   0.0f,   0.0f,     0.0f, 1.0f, 0.0f,
         0.0f,   200.0f, 0.0f,     0.0f, 1.0f, 0.0f,

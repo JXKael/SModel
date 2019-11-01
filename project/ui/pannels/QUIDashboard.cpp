@@ -27,17 +27,17 @@ void QUIDashboard::Init() {
     // 自由度设置
     this->InitDofs();
 
-    QHBoxLayout *layout = new QHBoxLayout(); // 总的layout
+    QHBoxLayout *layout = new QHBoxLayout(this); // 总的layout
 
-    layout->addLayout(this->InitThetasPannel());
     layout->addLayout(this->InitTreePannel());
+    layout->addLayout(this->InitThetasPannel());
 
     this->ConnectMapper();
     // 总的弹板设置
     this->setLayout(layout);
     this->resize(1080, 916);
     this->move(80, 20);
-    this->setWindowTitle("body pannel");
+    this->setWindowTitle("Dash board");
 }
 
 void QUIDashboard::UpdateGL(const smodel::Thetas &thetas) {
@@ -142,13 +142,14 @@ QGridLayout *QUIDashboard::InitTreePannel() {
     QGridLayout *layout_tree = new QGridLayout();
 
     this->tree = new QTreeWidget(this);
-    tree->setHeaderLabels(QStringList() << "Phalange name" << "Description");
+    tree->setHeaderLabels(QStringList() << "Bone name" << "Center id" << "Center name");
     tree->setColumnWidth(0, 240);
-    tree->setColumnWidth(1, 260);
+    tree->setColumnWidth(1, 80);
+    tree->setColumnWidth(2, 160);
     tree->setFixedWidth(500);
-    const smodel::Bones &bones = model_ctrl_->GetBones();
-    QTreeWidgetItem *root = new QTreeWidgetItem(QStringList() << bones[0].name.c_str());
-    this->AddBoneTreeItem(bones[0], root);
+    const smodel::Bone &root_bone = model_ctrl_->GetRootBone();
+    QTreeWidgetItem *root = new QTreeWidgetItem(QStringList() << root_bone.name.c_str());
+    this->AddBoneTreeItem(root_bone, root);
     tree->addTopLevelItem(root);
     connect(tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(onTreeItemClicked(QTreeWidgetItem *, int)));
 
@@ -158,26 +159,30 @@ QGridLayout *QUIDashboard::InitTreePannel() {
 
 void QUIDashboard::AddBoneTreeItem(const smodel::Bone &bone, QTreeWidgetItem *parentItem) {
     const smodel::Bones &bones = model_ctrl_->GetBones();
-    if (!bone.children_ids.empty()) {
-        for (int i = 0; i < bone.children_ids.size(); ++i) {
-            const smodel::Bone &child_bone = bones[bone.children_ids[i]];
-            int center_id = child_bone.center_id;
-            QString s_center = QString("center id: %1, name: %2").arg(center_id).arg(child_bone.center->name.c_str());
-            QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << child_bone.name.c_str() << s_center.toStdString().c_str());
+    if (bone.hasChildren()) {
+        for (const smodel::Bone *child : bone.children) {
+            QString s_centerid = QString("%1").arg(child->center_id);
+            QString s_centername = QString("%1").arg(child->center->name.c_str());
+            QTreeWidgetItem *item = new QTreeWidgetItem(
+                QStringList() << child->name.c_str() <<
+                                 s_centerid.toStdString().c_str() <<
+                                 s_centername.toStdString().c_str());
             parentItem->addChild(item);
-            AddBoneTreeItem(child_bone, item);
+            AddBoneTreeItem(*child, item);
         }
     }
     this->AddAttachCenters(bone, parentItem);
 }
 
 void QUIDashboard::AddAttachCenters(const smodel::Bone &bone, QTreeWidgetItem *parentItem) {
-    if (bone.attachment_ids.size() > 0) {
+    if (bone.hasAttachments()) {
         QTreeWidgetItem *attachment = new QTreeWidgetItem(QStringList() << ATTACHMENT << "the centers attached to this phalange");
         for (int i = 0; i < bone.attachments.size(); ++i) {
             const smodel::Sphere *center = bone.attachments[i];
-            QString s_center = QString("center id: %1, name: %2").arg(center->id).arg(center->name.c_str());
-            attachment->addChild(new QTreeWidgetItem(QStringList() << center->name.c_str() << s_center.toStdString().c_str()));
+            QString s_centerid = QString("%1").arg(center->id);
+            QString s_centername = QString("%1").arg(center->name.c_str());
+            QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << center->name.c_str() << s_centerid.toStdString().c_str() << s_centername.toStdString().c_str());
+            attachment->addChild(item);
         }
         parentItem->addChild(attachment);
     }
@@ -217,16 +222,6 @@ void QUIDashboard::sliderHandler(int param) {
         // 更新模型
         smodel::Thetas thetas = model_ctrl_->GetThetas();
         thetas[index] = y;
-        //switch (tree_item_type) {
-        //case kBone:
-        //    this->glwidget_->SetSelectBone(selected_boneid);
-        //    break;
-        //case kAttachment:
-        //    this->glwidget_->SetSelectAttachment(selected_boneid, selected_centerid);
-        //    break;
-        //default:
-        //    break;
-        //}
         this->UpdateGL(thetas);
     }
 }
@@ -252,62 +247,25 @@ void QUIDashboard::editHandler(int param) {
         // 更新模型
         smodel::Thetas thetas = model_ctrl_->GetThetas();
         thetas[index] = y;
-        //switch (tree_item_type) {
-        //case kBone:
-        //    this->glwidget_->SetSelectBone(selected_boneid);
-        //    break;
-        //case kAttachment:
-        //    this->glwidget_->SetSelectAttachment(selected_boneid, selected_centerid);
-        //    break;
-        //default:
-        //    break;
-        //}
         this->UpdateGL(thetas);
     }
 }
 
 void QUIDashboard::onTreeItemClicked(QTreeWidgetItem *item, int column) {
-    //int a = 0;
-    //std::string itemName = item->text(0).toStdString();
-    //const smodel::Bones &bones = model_ctrl_->GetBones();
-    //std::map<std::string, int> &bones_name_to_id = model_ctrl_->GetBodyModel()->bones_name_to_id_map;
-    //std::map<std::string, int>::iterator it = bones_name_to_id.find(itemName);
-    //std::map<std::string, int> &centers_name_to_id = model_ctrl_->GetBodyModel()->centers_name_to_id_map;
-    //tree_item_type = kNone;
-    //try{
-    //    if (itemName != ATTACHMENT) {
-    //        if (it != bones_name_to_id.end()){
-    //            // 点击的是一个bone
-    //            selected_boneid = it->second;
-    //            selected_centerid = bones[selected_boneid].center_id;
-    //            if (selected_centerid > -1) {
-    //                tree_item_type = kBone;
-    //                this->glwidget_->SetSelectBone(selected_boneid);
-    //            }
-    //            else throw true;
-    //        }
-    //        else {
-    //            it = centers_name_to_id.find(itemName);
-    //            if (it != centers_name_to_id.end()) {
-    //                // 点击的是一个attachment center
-    //                selected_centerid = it->second;
-    //                std::string phalange_name = item->parent()->parent()->text(0).toStdString();
-    //                selected_boneid = bones_name_to_id[phalange_name];
-    //                tree_item_type = kAttachment;
-    //                this->glwidget_->SetSelectAttachment(selected_boneid, selected_centerid);
-    //            }
-    //            else throw true;
-    //        }
-    //    }
-    //    else throw true;
-    //}
-    //catch (bool isError) {
-    //    if (isError) {
-    //        tree_item_type = kNone;
-    //        this->selected_boneid = -1;
-    //        this->selected_centerid = -1;
-    //        // this->glwidget_->SetSelectPhalange(kRight, -1, false);
-    //    }
-    //}
-    //this->glwidget_->update();
+    int a = 0;
+    std::string item_name = item->text(0).toStdString();
+    const smodel::Bones &bones = model_ctrl_->GetBones();
+    try{
+        if (item_name != ATTACHMENT && item_name != ROOT_NAME) {
+            int center_id = atoi(item->text(1).toStdString().c_str());
+            this->model_ctrl_->SetSelectedCenterid(center_id);
+        }
+        else throw true;
+    }
+    catch (bool isError) {
+        if (isError) {
+            this->model_ctrl_->SetSelectedCenterid();
+        }
+    }
+    pannel_ctrl_->UpdateGL();
 }

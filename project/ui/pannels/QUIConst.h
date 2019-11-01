@@ -53,11 +53,5 @@ enum MINMAX {
     kMax
 };
 
-enum TreeItemType { 
-    kNone = 0,
-    kBone,
-    kAttachment
-};
-
 #endif // QUI_CONST_H
 

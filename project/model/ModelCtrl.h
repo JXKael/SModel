@@ -19,6 +19,8 @@ private:
     int parent_bone_id_;
     std::vector<ModelCtrl *> children_;
 
+    int selected_centerid;
+
 public:
     // constructor & destructor
     ModelCtrl();
@@ -47,6 +49,9 @@ public:
     inline const TangentPoints &GetTangentPoints() const { return model.tangent_points; }
 
     void AddChild(ModelCtrl &child, const int to_boneid = -1);
+
+    inline void SetSelectedCenterid(int centerid = -1) { selected_centerid = centerid; }
+    inline int GetSelectedCenterid() const { return selected_centerid; }
 private:
     void MoveChildren();
     void UpdateChildren();

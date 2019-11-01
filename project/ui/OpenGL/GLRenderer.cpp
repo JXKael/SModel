@@ -25,7 +25,10 @@ GLRenderer::GLRenderer(const QString &vertex_shader, const QString &frag_shader)
 GLRenderer::~GLRenderer() {
     this->ClearVertices();
     this->ClearTextures();
+    shader_program.release();
+    vbo.release();
     vbo.destroy();
+    vao.release();
     vao.destroy();
 }
 
@@ -59,6 +62,7 @@ void GLRenderer::InitializeGL() {
     }
 
     this->BindStaticDrawData();
+    this->BindDynamicDrawData();
 }
 
 void GLRenderer::ResizeGL(int w, int h) {
@@ -84,22 +88,6 @@ void GLRenderer::AddTexture(const std::string &tex_name, const QString &tex_path
         texture_paths[tex_name] = tex_path;
 }
 
-void GLRenderer::LoadTextures() {
-    for (const std::pair<std::string, QString> &texture_path : texture_paths) {
-        const std::string &tex_name = texture_path.first;
-        const QString &tex_path = texture_path.second;
-
-        QImage image;
-        if (!image.load(tex_path)) {
-            std::cerr << "error loading texture: " << tex_path.toStdString() << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        QOpenGLTexture *texture = new QOpenGLTexture(image.mirrored());
-        textures[tex_name] = texture;
-
-    }
-}
-
 void GLRenderer::ClearVertices() {
     vertices.clear();
 }
@@ -117,8 +105,6 @@ void GLRenderer::ClearTextures() {
 }
 
 void GLRenderer::BindStaticDrawData() {
-    if (vertices.empty()) return;
-
     bool success = false;
     vao.bind();
     success = vbo.bind();
@@ -128,7 +114,8 @@ void GLRenderer::BindStaticDrawData() {
     success = shader_program.bind();
     assert(success);
 
-    vbo.allocate(vertices.data(), sizeof(vertices[0]) * (int)vertices.size());
+    if (!vertices.empty())
+        vbo.allocate(vertices.data(), sizeof(vertices[0]) * (int)vertices.size());
 
     this->PassVerticesToShader();
     this->PassVertexColorToShader();
@@ -141,52 +128,88 @@ void GLRenderer::BindStaticDrawData() {
     vbo.release();
 }
 
-void GLRenderer::PaintGL() {
-    if (!vertices.empty()) {
-        vao.bind();
-        shader_program.bind();
+void GLRenderer::BindDynamicDrawData() {
+    return;
+    //bool success = false;
+    //vao.bind();
+    //success = vbo.bind();
+    //assert(success);
+    //vbo.setUsagePattern(QGLBuffer::UsagePattern::DynamicDraw);
 
-        this->PassMVPToShader();
-        this->PassOtherToShader();
-        this->ActiveTexture();
+    //success = shader_program.bind();
+    //assert(success);
 
-        Draw();
+    //// if (!vertices.empty())
+    ////     vbo.allocate(vertices.data(), sizeof(vertices[0]) * (int)vertices.size());
 
-        shader_program.release();
-        vao.release();
-    }
+    //// this->PassVerticesToShader();
+    //// this->PassVertexColorToShader();
+    //// this->PassTexcoordToShader();
+    //// this->LoadTextures();
+    //// this->PassTextureToShader();
+
+    //shader_program.release();
+    //vao.release();
+    //vbo.release();
 }
 
-void GLRenderer::ActiveTexture() {
-    for (const std::pair<std::string, QOpenGLTexture *> &tex_pair : textures) {
-        const std::string &tex_name = tex_pair.first;
-        QOpenGLTexture *texture = tex_pair.second;
+void GLRenderer::PaintGL() {
+    vao.bind();
+    shader_program.bind();
+    this->PassDynamicVerticesToShader();
 
-        texture->bind(texture_ids[tex_name]);
+    if (!vertices.empty()) {
+        this->PassMVPToShader();
+        this->ActiveTexture();
+        this->PassOtherToShader();
+
+        Draw();
     }
+    shader_program.release();
+    vao.release();
 }
 
 void GLRenderer::Draw() {
-    glDrawArrays(render_mode, 0, (GLsizei)(vertices.size() / 8));
+    return;
+    // glDrawArrays(render_mode, 0, (GLsizei)(vertices.size() / 8));
 }
 
 // Called in InitializeGL
+// 顶点位置
 void GLRenderer::PassVerticesToShader() {
-    // 顶点
-    shader_program.setAttributeBuffer("position", GL_FLOAT, 0, 3, 8 * sizeof(float));
-    shader_program.enableAttributeArray("position");
+    return;
+    // shader_program.setAttributeBuffer("position", GL_FLOAT, 0, 3, 8 * sizeof(float));
+    // shader_program.enableAttributeArray("position");
 }
 
+// 顶点颜色
 void GLRenderer::PassVertexColorToShader() {
-    // 颜色
-    shader_program.setAttributeBuffer("color", GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
-    shader_program.enableAttributeArray("color");
+    return;
+    // shader_program.setAttributeBuffer("color", GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
+    // shader_program.enableAttributeArray("color");
 }
 
+// 顶点纹理坐标
 void GLRenderer::PassTexcoordToShader() {
-    // 纹理坐标
-    shader_program.setAttributeBuffer("texcoord", GL_FLOAT, 6 * sizeof(float), 2, 8 * sizeof(float));
-    shader_program.enableAttributeArray("texcoord");
+    return;
+    // shader_program.setAttributeBuffer("texcoord", GL_FLOAT, 6 * sizeof(float), 2, 8 * sizeof(float));
+    // shader_program.enableAttributeArray("texcoord");
+}
+
+void GLRenderer::LoadTextures() {
+    for (const std::pair<std::string, QString> &texture_path : texture_paths) {
+        const std::string &tex_name = texture_path.first;
+        const QString &tex_path = texture_path.second;
+
+        QImage image;
+        if (!image.load(tex_path)) {
+            std::cerr << "error loading texture: " << tex_path.toStdString() << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        QOpenGLTexture *texture = new QOpenGLTexture(image.mirrored());
+        textures[tex_name] = texture;
+
+    }
 }
 
 void GLRenderer::PassTextureToShader() {
@@ -211,11 +234,28 @@ void GLRenderer::PassTextureToShader() {
     }
 }
 
-// Called in Paint
+// Called in PaintGL
+void GLRenderer::PassDynamicVerticesToShader() {
+    return;
+    // add vertices
+    // vbo.bind <--- essential
+    // vbo.allocate
+    // pass to shader
+    // vbo.release
+}
+
 void GLRenderer::PassMVPToShader() {
     glm::mat4 MVP = projection * view * model;
     shader_program.setUniformValue("MVP", QMatrix4x4(glm::value_ptr(MVP), 4, 4));
 }
 
-void GLRenderer::PassOtherToShader() {}
+void GLRenderer::ActiveTexture() {
+    for (const std::pair<std::string, QOpenGLTexture *> &tex_pair : textures) {
+        const std::string &tex_name = tex_pair.first;
+        QOpenGLTexture *texture = tex_pair.second;
 
+        texture->bind(texture_ids[tex_name]);
+    }
+}
+
+void GLRenderer::PassOtherToShader() { return; }

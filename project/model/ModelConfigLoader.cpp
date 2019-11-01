@@ -7,16 +7,15 @@ ModelConfigLoader::ModelConfigLoader() {}
 Centers ModelConfigLoader::LoadCenters(const std::string &path) {
     Centers centers;
     try {
-        io::CSVReader<6> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "position", "radius", "type", "attached_bone_id");
-        int id, type, attached_bone_id;
+        io::CSVReader<5> centers_csv(path);
+        centers_csv.read_header(io::ignore_extra_column, "id", "name", "position", "radius", "type");
+        int id, type;
         float radius;
         std::string name, position;
-        while (centers_csv.read_row(id, name, position, radius, type, attached_bone_id)) {
+        while (centers_csv.read_row(id, name, position, radius, type)) {
             centers.push_back(Sphere(id, name, radius,
                 convertToVec3(position),
-                convertToSphereType(type),
-                attached_bone_id)
+                convertToSphereType(type))
             );
         }
     } catch (io::error::can_not_open_file err) {
@@ -29,13 +28,12 @@ Centers ModelConfigLoader::LoadCenters(const std::string &path) {
 Bones ModelConfigLoader::LoadBones(const std::string &path) {
     Bones bones;
     try {
-        io::CSVReader<7> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "center_id", "parent_id", "children_ids", "attachment_ids", "init_local");
+        io::CSVReader<6> centers_csv(path);
+        centers_csv.read_header(io::ignore_extra_column, "id", "name", "center_id", "parent_id", "attachment_ids", "init_local");
         int id, center_id, parent_id;
-        std::string name, children_ids, attachment_ids, init_local;
-        while (centers_csv.read_row(id, name, center_id, parent_id, children_ids, attachment_ids, init_local)) {
+        std::string name, attachment_ids, init_local;
+        while (centers_csv.read_row(id, name, center_id, parent_id, attachment_ids, init_local)) {
             bones.push_back(Bone(id, name, center_id, parent_id,
-                convertToIntArray(children_ids),
                 convertToIntArray(attachment_ids),
                 convertToMat4(init_local))
             );
@@ -51,15 +49,16 @@ Dofs ModelConfigLoader::LoadDofs(const std::string &path) {
     Dofs dofs;
     try {
         io::CSVReader<8> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "type", "axis_type", "bone_id", "min", "max", "init_val");
+        centers_csv.read_header(io::ignore_extra_column, "id", "name", "type", "axis_type", "min", "max", "init_val", "bone_id");
         int id, type, axis_type, bone_id;
         std::string name;
         float min, max, init_val;
-        while (centers_csv.read_row(id, name, type, axis_type, bone_id, min, max, init_val)) {
+        while (centers_csv.read_row(id, name, type, axis_type, min, max, init_val, bone_id)) {
             dofs.push_back(Dof(id, name,
                 convertToDofType(type),
                 convertToAxisType(axis_type),
-                bone_id, min, max, init_val));
+                min, max, init_val,
+                bone_id));
         }
     }
     catch (io::error::can_not_open_file err) {

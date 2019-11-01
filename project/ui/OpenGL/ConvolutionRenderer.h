@@ -22,7 +22,7 @@ private:
         float p = 60.0f;
     } material;
 
-    smodel::ModelCtrl *model_;
+    const smodel::ModelCtrl *model_;
 
     std::string project_path_;
 
@@ -32,8 +32,7 @@ private:
     GLint window_height = 0;
 public:
     ConvolutionRenderer();
-    ConvolutionRenderer(const std::string project_path);
-    ConvolutionRenderer(const QString &vertex_shader, const QString &frag_shader);
+    ConvolutionRenderer(const std::string project_path, const smodel::ModelCtrl *model);
     ~ConvolutionRenderer();
     void ResizeGL(int w, int h) override;
 
@@ -50,8 +49,6 @@ public:
     void PassMaterialToShader();
     void PassRenderModelToShader();
 
-    // Pass in an initialized ModelCtrl
-    void SetRenderModel(smodel::ModelCtrl &initialized_model) { this->model_ = &initialized_model; }
 private:
     void SpecialInit();
 };

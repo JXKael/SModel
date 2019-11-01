@@ -32,9 +32,23 @@ void ModelSemantics::InitTopology() {
 }
 
 void ModelSemantics::InitCenters() {
-    for (Center &center : centers_) {
-        if (center.isAttachment() && center.attached_bone_id < bones_.size()) {
-            center.attached_bone = &bones_[center.attached_bone_id];
+    // 根据bone中的attachment_ids初始化center中的attached_bone
+    for (Bone &bone : bones_) {
+        if (bone.hasAttachments()) {
+            for (const int &centerid : bone.attachment_ids) {
+                if (centerid >= 0 && centerid < centers_.size()) {
+                    centers_[centerid].attached_bone = &bone;
+                    if (centers_[centerid].type != SphereType::kAttachment) {
+                        std::cout << "!!! centerid: " << centerid << " 配置为非attachment，却在" << bone.id << "中配置为attachment" << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    // 校验
+    for (const Sphere &center : centers_) {
+        if (center.isAttachment() && center.attached_bone == nullptr) {
+            std::cout << "!!! centerid: " << center.id << " 配置为attachment，却未在Bones.csv中配置" << std::endl;
         }
     }
 }
@@ -43,16 +57,11 @@ void ModelSemantics::InitBones() {
     for (Bone &bone : bones_) {
         if (bone.center_id >= 0 && bone.center_id < centers_.size()) {
             bone.center = &centers_[bone.center_id];
+            centers_[bone.center_id].bone = &bone;
         }
         if (bone.parent_id >= 0 && bone.parent_id < bones_.size()) {
             bone.parent = &bones_[bone.parent_id];
-        }
-        if (bone.hasChildren()) {
-            for (const int &child_id : bone.children_ids) {
-                if (child_id >= 0 && child_id < bones_.size()) {
-                    bone.children.push_back(&bones_[child_id]);
-                }
-            }
+            bone.parent->children.push_back(&bone);
         }
         if (bone.hasAttachments()) {
             for (const int &attachment_id : bone.attachment_ids) {

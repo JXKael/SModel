@@ -6,13 +6,14 @@ ModelCtrl::ModelCtrl() {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
+    selected_centerid = -1;
 }
 
-ModelCtrl::ModelCtrl(const std::string &data_path): data_path_(data_path)
-{
+ModelCtrl::ModelCtrl(const std::string &data_path): data_path_(data_path) {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
+    selected_centerid = -1;
 }
 
 ModelCtrl::~ModelCtrl() {
@@ -92,7 +93,7 @@ Bone ModelCtrl::GetBone(const std::string &name) const {
 }
 
 Bone ModelCtrl::GetRootBone() const {
-    return GetBone("Root");
+    return GetBone(ROOT_NAME);
 }
 
 void ModelCtrl::AddChild(ModelCtrl &child, const int to_boneid) {

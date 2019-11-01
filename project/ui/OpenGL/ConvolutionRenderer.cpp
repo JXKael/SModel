@@ -6,22 +6,14 @@ ConvolutionRenderer::ConvolutionRenderer() : GLRenderer() {
     SpecialInit();
 }
 
-ConvolutionRenderer::ConvolutionRenderer(const std::string project_path)
-  : project_path_(project_path)
+ConvolutionRenderer::ConvolutionRenderer(const std::string project_path, const smodel::ModelCtrl *model)
+  : project_path_(project_path),
+    model_(model)
 {
     SpecialInit();
 }
 
-ConvolutionRenderer::ConvolutionRenderer(const QString &vertex_shader, const QString &frag_shader)
-  : GLRenderer(vertex_shader, frag_shader) {
-    SpecialInit();
-}
-
-ConvolutionRenderer::~ConvolutionRenderer() {
-    this->ClearVertices();
-    vbo.destroy();
-    vao.destroy();
-}
+ConvolutionRenderer::~ConvolutionRenderer() {}
 
 void ConvolutionRenderer::SpecialInit() {
     std::vector<float> convolution_vertices = {
