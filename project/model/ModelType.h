@@ -112,7 +112,7 @@ struct Bone {
         local = mat4::Identity();
         global = mat4::Identity();
     }
-    const bool isModelRoot() const { return parent_id == -1; }
+    const bool isModelRoot() const { return parent_id == -1 && name == ROOT_NAME; }
     const bool hasParent() const { return parent_id >= 0; }
     const bool hasChildren() const { return !children.empty(); }
     const bool hasAttachments() const { return !attachment_ids.empty(); }

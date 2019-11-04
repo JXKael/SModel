@@ -64,7 +64,7 @@ void Model::Move(const Thetas &thetas) {
 
 void Model::Move(const Bone &parent_bone) {
     for (Bone &bone : bones) {
-        if (bone.name == "Root") {
+        if (bone.isModelRoot()) {
             bone.global = parent_bone.global * bone.local;
             break;
         }
@@ -218,7 +218,7 @@ void Model::computeTangentPoint(const glm::vec3 &camera_ray,
     std::cout << "r2 = " << r2 << std::endl;
     std::cout << "r3 = " << r3 << std::endl;*/
 
-    float epsilon = 1e-2;
+    double epsilon = 1e-2;
     if (r1 - r2 < epsilon && r1 - r3 < epsilon) { // 三个球差不多大
         n = cross(c1 - c2, c1 - c3);
         n = n / length(n);

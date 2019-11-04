@@ -141,7 +141,7 @@ public:
     }
 
     void ProcessScroll(float delta) {
-        position = position_base + delta * front;
+        position = position_base + glm::sign(delta) * movement_speed * 10.0f * front;
         SetBasePosition();
     }
 

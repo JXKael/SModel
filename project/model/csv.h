@@ -29,7 +29,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable: 4996)
 
 #ifndef CSV_H
 #define CSV_H
@@ -77,7 +77,7 @@ struct with_file_name {
     with_file_name() {
         std::memset(file_name, 0, sizeof(file_name));
     }
-                       
+
     void set_file_name(const char*file_name) {
         if (file_name != nullptr) {
             strncpy(this->file_name, file_name, sizeof(this->file_name));
@@ -106,7 +106,7 @@ struct with_errno{
     with_errno() {
         errno_value = 0;
     }
-                       
+
     void set_errno(int errno_value) {
         this->errno_value = errno_value;
     }
@@ -139,7 +139,7 @@ struct line_length_limit_exceeded : base, with_file_name, with_file_line {
 
 class ByteSourceBase {
 public:
-        virtual int read(char*buffer, int size) = 0;
+        virtual int read(char *buffer, int size) = 0;
         virtual ~ByteSourceBase() {}
 };
 
@@ -153,7 +153,7 @@ public:
     }
 
     int read(char *buffer, int size) {
-        return std::fread(buffer, 1, size, file);
+        return (int)std::fread(buffer, 1, size, file);
     }
 
     ~OwningStdIOByteSourceBase() {
@@ -170,7 +170,7 @@ public:
 
     int read(char *buffer, int size) {
         in.read(buffer, size);
-        return in.gcount();
+        return (int)in.gcount(); // streamsize = long long
     }
 
     ~NonOwningIStreamByteSource() {}
@@ -179,15 +179,15 @@ private:
     std::istream &in;
 };
 
-class NonOwningStringByteSource : public ByteSourceBase{
+class NonOwningStringByteSource : public ByteSourceBase {
 public:
     NonOwningStringByteSource(const char *str, long long size) : str(str), remaining_byte_count(size) {}
 
     int read(char *buffer, int desired_byte_count) {
-        int to_copy_byte_count = desired_byte_count;
+        long long to_copy_byte_count = desired_byte_count;
         if (remaining_byte_count < to_copy_byte_count)
             to_copy_byte_count = remaining_byte_count;
-        std::memcpy(buffer, str, to_copy_byte_count);
+        std::memcpy(buffer, str, (size_t)to_copy_byte_count);
         remaining_byte_count -= to_copy_byte_count;
         str += to_copy_byte_count;
         return to_copy_byte_count;
@@ -201,9 +201,9 @@ private:
 };
 
 #ifndef CSV_IO_NO_THREAD
-class AsynchronousReader{
+class AsynchronousReader {
 public:
-    void init(std::unique_ptr<ByteSourceBase>arg_byte_source) {
+    void init(std::unique_ptr<ByteSourceBase> arg_byte_source) {
         std::unique_lock<std::mutex>guard(lock);
         byte_source = std::move(arg_byte_source);
         desired_byte_count = -1;
@@ -214,7 +214,7 @@ public:
                 try {
                     for(;;) {
                         read_requested_condition.wait(
-                            guard, 
+                            guard,
                             [&] {
                                 return desired_byte_count != -1 || termination_requested;
                             }
@@ -249,7 +249,7 @@ public:
     int finish_read() {
         std::unique_lock<std::mutex> guard(lock);
         read_finished_condition.wait(
-            guard, 
+            guard,
             [&]{
                 return read_byte_count != -1 || read_error;
             }
@@ -363,7 +363,7 @@ private:
 public:
     LineReader() = delete;
     LineReader(const LineReader &) = delete;
-    LineReader&operator=(const LineReader &) = delete;
+    LineReader &operator=(const LineReader &) = delete;
 
     explicit LineReader(const char *file_name) {
         set_file_name(file_name);
@@ -481,7 +481,7 @@ public:
             ++data_end;
             buffer[line_end] = '\0';
         }
-        
+
 
         // handle windows \r\n-line breaks
         if (line_end != data_begin && buffer[line_end - 1] == '\r')
@@ -506,7 +506,7 @@ struct with_column_name {
     with_column_name() {
         std::memset(column_name, 0, max_column_name_length + 1);
     }
-                       
+
     void set_column_name(const char *column_name) {
         if (column_name != nullptr) {
             std::strncpy(this->column_name, column_name, max_column_name_length);
@@ -519,14 +519,13 @@ struct with_column_name {
     char column_name[max_column_name_length + 1];
 };
 
-
 const int max_column_content_length = 63;
 
 struct with_column_content {
     with_column_content() {
         std::memset(column_content, 0, max_column_content_length + 1);
     }
-                       
+
     void set_column_content(const char *column_content) {
         if (column_content != nullptr) {
             std::strncpy(this->column_content, column_content, max_column_content_length);
@@ -649,7 +648,7 @@ private:
     constexpr static bool is_trim_char(char){
         return false;
     }
-       
+
     template<class ...OtherTrimChars>
     constexpr static bool is_trim_char(char c, char trim_char, OtherTrimChars...other_trim_chars) {
         return c == trim_char || is_trim_char(c, other_trim_chars...);
@@ -665,7 +664,6 @@ public:
     }
 };
 
-
 struct no_comment {
     static bool is_comment(const char *) {
         return false;
@@ -678,7 +676,7 @@ private:
     constexpr static bool is_comment_start_char(char) {
         return false;
     }
-       
+
     template<class ...OtherCommentStartChars>
     constexpr static bool is_comment_start_char(char c, char comment_start_char, OtherCommentStartChars...other_comment_start_chars) {
         return c == comment_start_char || is_comment_start_char(c, other_comment_start_chars...);
@@ -769,7 +767,7 @@ struct throw_on_overflow {
     static void on_overflow(T &) {
         throw error::integer_overflow();
     }
-               
+
     template<class T>
     static void on_underflow(T &) {
         throw error::integer_underflow();
@@ -779,7 +777,7 @@ struct throw_on_overflow {
 struct ignore_overflow {
     template<class T>
     static void on_overflow(T &) {}
-               
+
     template<class T>
     static void on_underflow(T &) {}
 };
@@ -789,7 +787,7 @@ struct set_to_max_on_overflow {
     static void on_overflow(T &x){
         x = std::numeric_limits<T>::max();
     }
-               
+
     template<class T>
     static void on_underflow(T &x){
         x = std::numeric_limits<T>::min();
@@ -798,262 +796,263 @@ struct set_to_max_on_overflow {
 
 
 namespace detail {
-    template<class quote_policy>
-    void chop_next_column(char *&line, char *&col_begin, char *&col_end) {
-        assert(line != nullptr);
 
-        col_begin = line;
-        // the col_begin + (... - col_begin) removes the constness
-        col_end = col_begin + (quote_policy::find_next_column_end(col_begin) - col_begin);
-                       
-        if (*col_end == '\0') {
-            line = nullptr;
-        } else {
-            *col_end = '\0';
-            line = col_end + 1;
-        }
+template<class quote_policy>
+void chop_next_column(char *&line, char *&col_begin, char *&col_end) {
+    assert(line != nullptr);
+
+    col_begin = line;
+    // the col_begin + (... - col_begin) removes the constness
+    col_end = col_begin + (quote_policy::find_next_column_end(col_begin) - col_begin);
+
+    if (*col_end == '\0') {
+        line = nullptr;
+    } else {
+        *col_end = '\0';
+        line = col_end + 1;
     }
+}
 
-    template<class trim_policy, class quote_policy>
-    void parse_line(
-        char *line,
-        char **sorted_col,
-        const std::vector<int> &col_order
-    ){
-        for (int i : col_order) {
-            if (line == nullptr)
-                throw ::io::error::too_few_columns();
-            char*col_begin, *col_end;
-            chop_next_column<quote_policy>(line, col_begin, col_end);
+template<class trim_policy, class quote_policy>
+void parse_line(
+    char *line,
+    char **sorted_col,
+    const std::vector<int> &col_order
+){
+    for (int i : col_order) {
+        if (line == nullptr)
+            throw ::io::error::too_few_columns();
+        char*col_begin, *col_end;
+        chop_next_column<quote_policy>(line, col_begin, col_end);
 
-            if (i != -1) {
-                trim_policy::trim(col_begin, col_end);
-                quote_policy::unescape(col_begin, col_end);
-
-                sorted_col[i] = col_begin;
-            }
-        }
-        if (line != nullptr)
-            throw ::io::error::too_many_columns();
-    }
-
-    template<unsigned column_count, class trim_policy, class quote_policy>
-    void parse_header_line(
-            char*line,
-            std::vector<int>&col_order,
-            const std::string*col_name,
-            ignore_column ignore_policy
-    ){
-        col_order.clear();
-
-        bool found[column_count];
-        std::fill(found, found + column_count, false);
-        while(line) {
-            char *col_begin, *col_end;
-            chop_next_column<quote_policy>(line, col_begin, col_end);
-
+        if (i != -1) {
             trim_policy::trim(col_begin, col_end);
             quote_policy::unescape(col_begin, col_end);
 
-            for (unsigned i = 0; i < column_count; ++i)
-                if (col_begin == col_name[i]) {
-                    if (found[i]) {
-                        error::duplicated_column_in_header err;
-                        err.set_column_name(col_begin);
-                        throw err;
-                    }
-                    found[i] = true;
-                    col_order.push_back(i);
-                    col_begin = 0;
-                    break;
-                }
-            if (col_begin) {
-                if (ignore_policy & ::io::ignore_extra_column)
-                    col_order.push_back(-1);
-                else {
-                    error::extra_column_in_header err;
+            sorted_col[i] = col_begin;
+        }
+    }
+    if (line != nullptr)
+        throw ::io::error::too_many_columns();
+}
+
+template<unsigned column_count, class trim_policy, class quote_policy>
+void parse_header_line(
+        char*line,
+        std::vector<int>&col_order,
+        const std::string*col_name,
+        ignore_column ignore_policy
+){
+    col_order.clear();
+
+    bool found[column_count];
+    std::fill(found, found + column_count, false);
+    while(line) {
+        char *col_begin, *col_end;
+        chop_next_column<quote_policy>(line, col_begin, col_end);
+
+        trim_policy::trim(col_begin, col_end);
+        quote_policy::unescape(col_begin, col_end);
+
+        for (unsigned i = 0; i < column_count; ++i)
+            if (col_begin == col_name[i]) {
+                if (found[i]) {
+                    error::duplicated_column_in_header err;
                     err.set_column_name(col_begin);
                     throw err;
                 }
+                found[i] = true;
+                col_order.push_back(i);
+                col_begin = 0;
+                break;
             }
-        }
-        if (!(ignore_policy & ::io::ignore_missing_column)) {
-            for (unsigned i = 0; i < column_count; ++i) {
-                if (!found[i]) {
-                    error::missing_column_in_header err;
-                    err.set_column_name(col_name[i].c_str());
-                    throw err;
-                }
+        if (col_begin) {
+            if (ignore_policy & ::io::ignore_extra_column)
+                col_order.push_back(-1);
+            else {
+                error::extra_column_in_header err;
+                err.set_column_name(col_begin);
+                throw err;
             }
         }
     }
+    if (!(ignore_policy & ::io::ignore_missing_column)) {
+        for (unsigned i = 0; i < column_count; ++i) {
+            if (!found[i]) {
+                error::missing_column_in_header err;
+                err.set_column_name(col_name[i].c_str());
+                throw err;
+            }
+        }
+    }
+}
 
-    template<class overflow_policy>
-    void parse(char *col, char &x) {
-        if(!*col)
-            throw error::invalid_single_character();
-        x = *col;
+template<class overflow_policy>
+void parse(char *col, char &x) {
+    if(!*col)
+        throw error::invalid_single_character();
+    x = *col;
+    ++col;
+    if(*col)
+        throw error::invalid_single_character();
+}
+
+template<class overflow_policy>
+void parse(char *col, std::string &x) {
+    x = col;
+}
+
+template<class overflow_policy>
+void parse(char *col, const char *&x) {
+    x = col;
+}
+
+template<class overflow_policy>
+void parse(char *col, char *&x) {
+    x = col;
+}
+
+template<class overflow_policy, class T>
+void parse_unsigned_integer(const char *col, T &x){
+    x = 0;
+    while (*col != '\0') {
+        if ('0' <= *col && *col <= '9') {
+            T y = *col - '0';
+            if (x > (std::numeric_limits<T>::max() - y) / 10) {
+                overflow_policy::on_overflow(x);
+                return;
+            }
+            x = 10 * x + y;
+        } else
+            throw error::no_digit();
         ++col;
-        if(*col)
-            throw error::invalid_single_character();
     }
-               
-    template<class overflow_policy>
-    void parse(char *col, std::string &x) {
-        x = col;
-    }
+}
 
-    template<class overflow_policy>
-    void parse(char *col, const char *&x) {
-        x = col;
-    }
+template<class overflow_policy> void parse(char *col, unsigned char &x)
+    {parse_unsigned_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, unsigned short &x)
+    {parse_unsigned_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, unsigned int &x)
+    {parse_unsigned_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, unsigned long &x)
+    {parse_unsigned_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, unsigned long long &x)
+    {parse_unsigned_integer<overflow_policy>(col, x);}
 
-    template<class overflow_policy>
-    void parse(char *col, char *&x) {
-        x = col;
-    }
+template<class overflow_policy, class T>
+void parse_signed_integer(const char *col, T &x) {
+    if(*col == '-'){
+        ++col;
 
-    template<class overflow_policy, class T>
-    void parse_unsigned_integer(const char *col, T &x){
         x = 0;
         while (*col != '\0') {
             if ('0' <= *col && *col <= '9') {
                 T y = *col - '0';
-                if (x > (std::numeric_limits<T>::max() - y) / 10) {
-                    overflow_policy::on_overflow(x);
+                if (x < (std::numeric_limits<T>::min() + y) / 10) {
+                    overflow_policy::on_underflow(x);
                     return;
                 }
-                x = 10 * x + y;
+                x = 10 * x - y;
             } else
                 throw error::no_digit();
             ++col;
         }
+        return;
+    } else if (*col == '+')
+        ++col;
+    parse_unsigned_integer<overflow_policy>(col, x);
+}
+
+template<class overflow_policy> void parse(char *col, signed char &x)
+    {parse_signed_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, signed short &x)
+    {parse_signed_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, signed int &x)
+    {parse_signed_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, signed long &x)
+    {parse_signed_integer<overflow_policy>(col, x);}
+template<class overflow_policy> void parse(char *col, signed long long &x)
+    {parse_signed_integer<overflow_policy>(col, x);}
+
+template<class T>
+void parse_float(const char*col, T&x){
+    bool is_neg = false;
+    if (*col == '-') {
+        is_neg = true;
+        ++col;
+    } else if (*col == '+')
+        ++col;
+
+    x = 0;
+    while ('0' <= *col && *col <= '9') {
+        int y = *col - '0';
+        x *= 10;
+        x += y;
+        ++col;
     }
 
-    template<class overflow_policy>void parse(char *col, unsigned char &x)
-        {parse_unsigned_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, unsigned short &x)
-        {parse_unsigned_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, unsigned int &x)
-        {parse_unsigned_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, unsigned long &x)
-        {parse_unsigned_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, unsigned long long &x)
-        {parse_unsigned_integer<overflow_policy>(col, x);}
-
-    template<class overflow_policy, class T>
-    void parse_signed_integer(const char *col, T &x) {
-        if(*col == '-'){
-            ++col;
-
-            x = 0;
-            while (*col != '\0') {
-                if ('0' <= *col && *col <= '9') {
-                    T y = *col - '0';
-                    if (x < (std::numeric_limits<T>::min() + y) / 10) {
-                        overflow_policy::on_underflow(x);
-                        return;
-                    }
-                    x = 10 * x - y;
-                } else
-                    throw error::no_digit();
-                ++col;
-            }
-            return;
-        } else if (*col == '+')
-            ++col;
-        parse_unsigned_integer<overflow_policy>(col, x);
-    }      
-
-    template<class overflow_policy>void parse(char *col, signed char &x)
-        {parse_signed_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, signed short &x)
-        {parse_signed_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, signed int &x)
-        {parse_signed_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, signed long &x)
-        {parse_signed_integer<overflow_policy>(col, x);}
-    template<class overflow_policy>void parse(char *col, signed long long &x)
-        {parse_signed_integer<overflow_policy>(col, x);}
-
-    template<class T>
-    void parse_float(const char*col, T&x){
-        bool is_neg = false;
-        if (*col == '-') {
-            is_neg = true;
-            ++col;
-        } else if (*col == '+')
-            ++col;
-
-        x = 0;
-        while ('0' <= *col && *col <= '9') {
+    if (*col == '.' || *col == ',') {
+        ++col;
+        T pos = 1;
+        while('0' <= *col && *col <= '9') {
+            pos /= 10;
             int y = *col - '0';
-            x *= 10;
-            x += y;
             ++col;
+            x += y * pos;
         }
-                       
-        if (*col == '.' || *col == ',') {
-            ++col;
-            T pos = 1;
-            while('0' <= *col && *col <= '9') {
-                pos /= 10;
-                int y = *col - '0';
-                ++col;
-                x += y * pos;
-            }
-        }
-
-        if (*col == 'e' || *col == 'E') {
-            ++col;
-            int e;
-
-            parse_signed_integer<set_to_max_on_overflow>(col, e);
-
-            if(e != 0){
-                T base;
-                if (e < 0) {
-                    base = T(0.1);
-                    e = -e;
-                }else{
-                    base = T(10);
-                }
-       
-                while (e != 1) {
-                    if ((e & 1) == 0) {
-                        base = base * base;
-                        e >>= 1;
-                    } else {
-                        x *= base;
-                        --e;
-                    }
-                }
-                x *= base;
-            }
-        } else {
-            if (*col != '\0')
-                throw error::no_digit();
-        }
-
-        if (is_neg)
-            x = -x;
     }
 
-    template<class overflow_policy> void parse(char *col, float &x) { parse_float(col, x); }
-    template<class overflow_policy> void parse(char *col, double &x) { parse_float(col, x); }
-    template<class overflow_policy> void parse(char *col, long double &x) { parse_float(col, x); }
+    if (*col == 'e' || *col == 'E') {
+        ++col;
+        int e;
 
-    template<class overflow_policy, class T>
-    void parse(char *col, T &x) {
-        // Mute unused variable compiler warning
-        (void)col;
-        (void)x;
-        // GCC evalutes "false" when reading the template and
-        // "sizeof(T)!=sizeof(T)" only when instantiating it. This is why
-        // this strange construct is used.
-        static_assert(sizeof(T) != sizeof(T),
-                "Can not parse this type. Only buildin integrals, floats, char, char*, const char* and std::string are supported");
+        parse_signed_integer<set_to_max_on_overflow>(col, e);
+
+        if(e != 0){
+            T base;
+            if (e < 0) {
+                base = T(0.1);
+                e = -e;
+            }else{
+                base = T(10);
+            }
+
+            while (e != 1) {
+                if ((e & 1) == 0) {
+                    base = base * base;
+                    e >>= 1;
+                } else {
+                    x *= base;
+                    --e;
+                }
+            }
+            x *= base;
+        }
+    } else {
+        if (*col != '\0')
+            throw error::no_digit();
     }
+
+    if (is_neg)
+        x = -x;
+}
+
+template<class overflow_policy> void parse(char *col, float &x) { parse_float(col, x); }
+template<class overflow_policy> void parse(char *col, double &x) { parse_float(col, x); }
+template<class overflow_policy> void parse(char *col, long double &x) { parse_float(col, x); }
+
+template<class overflow_policy, class T>
+void parse(char *col, T &x) {
+    // Mute unused variable compiler warning
+    (void)col;
+    (void)x;
+    // GCC evalutes "false" when reading the template and
+    // "sizeof(T)!=sizeof(T)" only when instantiating it. This is why
+    // this strange construct is used.
+    static_assert(sizeof(T) != sizeof(T),
+            "Can not parse this type. Only buildin integrals, floats, char, char*, const char* and std::string are supported");
+}
 
 } // namespace detail
 
@@ -1061,8 +1060,7 @@ template<unsigned column_count,
     class trim_policy = trim_chars<' ', '\t'>,
     class quote_policy = no_quote_escape<','>,
     class overflow_policy = throw_on_overflow,
-    class comment_policy = no_comment
->
+    class comment_policy = no_comment>
 class CSVReader {
 private:
     LineReader in;
@@ -1084,7 +1082,7 @@ private:
 public:
     CSVReader() = delete;
     CSVReader(const CSVReader&) = delete;
-    CSVReader &operator=(const CSVReader &);
+    CSVReader &operator=(const CSVReader &) = delete;
 
     template<class ...Args>
     explicit CSVReader(Args &&...args) : in(std::forward<Args>(args)...) {
