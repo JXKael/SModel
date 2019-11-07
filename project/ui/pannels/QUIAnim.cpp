@@ -1,10 +1,10 @@
 ﻿#include "QUIAnim.h"
-#include "QUIPannelCtrl.h"
+#include "QUIManager.h"
 
 using namespace ui;
 
-QUIAnim::QUIAnim(QUIPannelCtrl *pannel_ctrl, std::map<std::string, smodel::ModelCtrl *> &models)
-  : pannel_ctrl_(pannel_ctrl), models_(models) {
+QUIAnim::QUIAnim(std::map<std::string, smodel::ModelCtrl *> &models)
+  : models_(models) {
     max_frame = 120;
     curr_frame = 0;
     timer = new QTimer(this);
@@ -24,9 +24,9 @@ void QUIAnim::Init() {
     layout->setAlignment(Qt::AlignTop);
 
     layout->addLayout(InitHead());
-    for (const std::pair<std::string, smodel::ModelCtrl *> p : models_) {
-        std::string name = p.first;
-        smodel::ModelCtrl *model = p.second;
+    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        std::string name = it->first;
+        smodel::ModelCtrl *model = it->second;
         layout->addLayout(InitTimeline(name, model));
     }
 
@@ -127,8 +127,13 @@ QHBoxLayout *QUIAnim::InitTimeline(const std::string &name, const smodel::ModelC
     return layout;
 }
 
+void QUIAnim::UpdateModel(const std::string &name, const smodel::Thetas &thetas) {
+    models_[name]->Move(thetas);
+    models_[name]->Update();
+}
+
 void QUIAnim::UpdateGL() {
-    pannel_ctrl_->UpdateGL();
+    QUIManager::Instance().UpdateGL();
 }
 
 const smodel::Thetas QUIAnim::calcThetas(const std::string &name) {
@@ -192,9 +197,8 @@ void QUIAnim::onSliderValueChanged(const QString &name) {
     std::string model_name = name.toStdString();
     curr_frame = this->sliders[model_name]->value();
     edit_currframe->setText(QString("%1").arg(curr_frame));
-    for (const std::pair<std::string, smodel::ModelCtrl *> &model : models_) {
-        model.second->Move(calcThetas(model.first));
-        model.second->Update();
+    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        this->UpdateModel(it->first, calcThetas(it->first));
     }
 
     this->UpdateGL();

@@ -13,7 +13,8 @@ private:
     ModelConfigLoader *config_loader;
     ModelSemantics *semantics;
 
-    const std::string data_path_;
+    const std::string name_;
+    const std::string project_path_;
 
     ModelCtrl *parent_;
     int parent_bone_id_;
@@ -23,8 +24,9 @@ private:
 
 public:
     // constructor & destructor
-    ModelCtrl();
-    ModelCtrl(const std::string &data_path);
+    explicit ModelCtrl();
+    explicit ModelCtrl(const std::string &project_path);
+    ModelCtrl(const std::string &name, const std::string &project_path);
     ~ModelCtrl();
 
 public:
@@ -52,6 +54,10 @@ public:
 
     inline void SetSelectedCenterid(int centerid = -1) { selected_centerid = centerid; }
     inline int GetSelectedCenterid() const { return selected_centerid; }
+
+    inline const std::string &GetName() const { return this->name_; }
+
+    inline const bool HasParent() const { return model.has_parent; }
 private:
     void MoveChildren();
     void UpdateChildren();

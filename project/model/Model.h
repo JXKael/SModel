@@ -30,7 +30,9 @@ public:
     bool has_parent;
 
 public:
-    Model();
+    explicit Model();
+    explicit Model(const std::string &name);
+    explicit Model(const smodel::Model &model);
     ~Model();
 
     void Clear();

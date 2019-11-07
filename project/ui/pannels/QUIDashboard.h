@@ -1,6 +1,8 @@
 ﻿#ifndef QUI_BODY_PANNEL_H
 #define QUI_BODY_PANNEL_H
 
+#include "QUIConst.h"
+
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -14,23 +16,16 @@
 #include <QMessageBox>
 #include <climits>
 
-#include "model/ModelCtrl.h"
-
-#include "QUIConst.h"
-
 namespace ui {
-
-class QUIPannelCtrl;
 
 class QUIDashboard: public QDialog {
     Q_OBJECT
 public:
     explicit QUIDashboard(QWidget *patent = 0);
-    explicit QUIDashboard(QUIPannelCtrl *pannel_ctrl, smodel::ModelCtrl *model_ctrl);
+    explicit QUIDashboard(smodel::ModelCtrl *model_ctrl);
     ~QUIDashboard();
 
 private:
-    QUIPannelCtrl *pannel_ctrl_;
     smodel::ModelCtrl *model_ctrl_;
 
     // 初始参数
@@ -55,7 +50,8 @@ private:
 
 public:
     void Init();
-    void UpdateGL(const smodel::Thetas &thetas);
+    void UpdateModel(const smodel::Thetas &thetas);
+    void UpdateGL();
     void ApplyAs(const smodel::Thetas &thetas);
 private:
     void InitDofs();
@@ -67,6 +63,7 @@ private:
     void ClampTheta(float *theta, int *slider_val, float min, float max);
 
 private slots :
+    void onClickBtnPick();
     void sliderHandler(int param);
     void editHandler(int param);
     void onTreeItemClicked(QTreeWidgetItem *item, int column);

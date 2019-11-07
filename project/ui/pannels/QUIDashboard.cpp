@@ -1,9 +1,9 @@
 ﻿#include "QUIDashboard.h"
-#include "QUIPannelCtrl.h"
+#include "QUIManager.h"
 
 using namespace ui;
 
-QUIDashboard::QUIDashboard(QUIPannelCtrl *pannel_ctrl, smodel::ModelCtrl *model_ctrl) : pannel_ctrl_(pannel_ctrl), model_ctrl_(model_ctrl) {
+QUIDashboard::QUIDashboard(smodel::ModelCtrl *model_ctrl) : model_ctrl_(model_ctrl) {
     this->s2e_mapper = new QSignalMapper(this);
     this->e2s_mapper = new QSignalMapper(this);
 }
@@ -40,10 +40,13 @@ void QUIDashboard::Init() {
     this->setWindowTitle("Dash board");
 }
 
-void QUIDashboard::UpdateGL(const smodel::Thetas &thetas) {
+void QUIDashboard::UpdateModel(const smodel::Thetas &thetas) {
     model_ctrl_->Move(thetas);
     model_ctrl_->Update();
-    pannel_ctrl_->UpdateGL();
+}
+
+void QUIDashboard::UpdateGL() {
+    QUIManager::Instance().UpdateGL();
 }
 
 void QUIDashboard::ApplyAs(const smodel::Thetas &thetas) {
@@ -59,7 +62,8 @@ void QUIDashboard::ApplyAs(const smodel::Thetas &thetas) {
         sliders[i]->setValue(x);
         line_edits[i]->setText(QString("%1").arg(y));
     }
-    this->UpdateGL(thetas);
+    this->UpdateModel(thetas);
+    this->UpdateGL();
 
     this->ConnectMapper();
 }
@@ -84,6 +88,7 @@ QGridLayout *QUIDashboard::InitThetasPannel() {
     line_edits.resize(model_ctrl_->GetDofsSize());
     linear_map.resize(model_ctrl_->GetDofsSize());
     linear_map.resize(model_ctrl_->GetDofsSize());
+    const smodel::Dofs &dofs = model_ctrl_->GetDofs();
 
     QGridLayout *layout_thetas = new QGridLayout();
     layout_thetas->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -132,8 +137,21 @@ QGridLayout *QUIDashboard::InitThetasPannel() {
         layout_thetas->addWidget(slider, idx, 3, 1, 5);
         layout_thetas->addWidget(lineEdit, idx, 8, 1, 2);
 
+        if (model_ctrl_->HasParent() && dofs[idx].free_type == smodel::DofFreeType::kUnderCtrl) {
+            slider->setDisabled(true);
+            lineEdit->setDisabled(true);
+        }
+
         idx++;
     }
+
+    QPushButton *btn_pick = new QPushButton();
+    btn_pick->setText("Pick from model");
+    btn_pick->setFocusPolicy(Qt::NoFocus);
+    btn_pick->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_pick, SIGNAL(pressed()), this, SLOT(onClickBtnPick()));
+
+    layout_thetas->addWidget(btn_pick, idx, 0, 1, 10);
 
     return layout_thetas;
 }
@@ -204,6 +222,10 @@ void QUIDashboard::ClampTheta(float *theta, int *slider_val, float min, float ma
     }
 }
 
+void QUIDashboard::onClickBtnPick() {
+    ApplyAs(model_ctrl_->GetThetas());
+}
+
 void QUIDashboard::sliderHandler(int param) {
     //std::cout << "滑动事件" << endl;
     //std::cout << idx << endl;
@@ -222,7 +244,8 @@ void QUIDashboard::sliderHandler(int param) {
         // 更新模型
         smodel::Thetas thetas = model_ctrl_->GetThetas();
         thetas[index] = y;
-        this->UpdateGL(thetas);
+        this->UpdateModel(thetas);
+        this->UpdateGL();
     }
 }
 
@@ -247,7 +270,8 @@ void QUIDashboard::editHandler(int param) {
         // 更新模型
         smodel::Thetas thetas = model_ctrl_->GetThetas();
         thetas[index] = y;
-        this->UpdateGL(thetas);
+        this->UpdateModel(thetas);
+        this->UpdateGL();
     }
 }
 
@@ -267,5 +291,5 @@ void QUIDashboard::onTreeItemClicked(QTreeWidgetItem *item, int column) {
             this->model_ctrl_->SetSelectedCenterid();
         }
     }
-    pannel_ctrl_->UpdateGL();
+    QUIManager::Instance().UpdateGL();
 }

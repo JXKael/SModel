@@ -25,6 +25,7 @@ include(cmake/modules/ConfigureGLM.cmake)
 include(cmake/modules/COnfigureEigen.cmake)
 
 # >>> --------------------------- 子项目配置
+add_subdirectory(project/utils)
 add_subdirectory(project/model)
 add_subdirectory(project/ui)
 add_subdirectory(project/apps)

@@ -1,6 +1,9 @@
 ﻿#ifndef QUI_CONST_H
 #define QUI_CONST_H
 
+#include "model/ModelCtrl.h"
+#include "renderers/GLRenderer.h"
+
 #define SINGLE_LINE_HEIGHT 24 // 一行的高度
 #define EDIT_TO_SLIDER_VLAUE(y, k, b) ((y - b) / k)
 #define SLIDER_TO_EDIT_VLAUE(x, k, b) (k * x + b)
@@ -38,10 +41,9 @@
 #define PANNEL_WIDTH 350
 #define BTN_COLUMN_NUM 4
 
-enum Hand {
-    kRight = 0,
-    kLeft = 1
-};
+typedef std::map<std::string, smodel::ModelCtrl *> models_map;
+
+typedef std::map<int, std::shared_ptr<ui::GLRenderer>> renderers_map;
 
 enum ParamType {
     kSlope = 0, // 斜率
@@ -54,4 +56,3 @@ enum MINMAX {
 };
 
 #endif // QUI_CONST_H
-

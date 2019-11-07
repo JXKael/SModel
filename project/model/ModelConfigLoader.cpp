@@ -48,14 +48,15 @@ Bones ModelConfigLoader::LoadBones(const std::string &path) {
 Dofs ModelConfigLoader::LoadDofs(const std::string &path) {
     Dofs dofs;
     try {
-        io::CSVReader<8> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "type", "axis_type", "min", "max", "init_val", "bone_id");
-        int id, type, axis_type, bone_id;
+        io::CSVReader<9> centers_csv(path);
+        centers_csv.read_header(io::ignore_extra_column, "id", "name", "type", "free_type", "axis_type", "min", "max", "init_val", "bone_id");
+        int id, type, axis_type, free_type, bone_id;
         std::string name;
         float min, max, init_val;
-        while (centers_csv.read_row(id, name, type, axis_type, min, max, init_val, bone_id)) {
+        while (centers_csv.read_row(id, name, type, free_type, axis_type, min, max, init_val, bone_id)) {
             dofs.push_back(Dof(id, name,
                 convertToDofType(type),
+                convertToDofFreeType(free_type),
                 convertToAxisType(axis_type),
                 min, max, init_val,
                 bone_id));
@@ -141,6 +142,11 @@ SphereType ModelConfigLoader::convertToSphereType(const int &type) {
 DofType ModelConfigLoader::convertToDofType(const int &type) {
     if (type == 0 || type == 1) return (DofType)type;
     return DofType::kRotation;
+}
+
+DofFreeType ModelConfigLoader::convertToDofFreeType(const int &free_type) {
+    if (free_type == 0 || free_type == 1) return (DofFreeType)free_type;
+    return DofFreeType::kFree;
 }
 
 AxisType ModelConfigLoader::convertToAxisType(const int &type) {

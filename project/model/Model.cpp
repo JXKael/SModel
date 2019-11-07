@@ -2,9 +2,27 @@
 
 using namespace smodel;
 
-Model::Model() {
-    camera_ray = glm::vec3(0, 0, 1);
-    has_parent = false;
+Model::Model() : camera_ray(0, 0, 1),  has_parent(false) {
+}
+
+Model::Model(const std::string &name) : camera_ray(0, 0, 1), has_parent(false) {
+
+}
+
+Model::Model(const smodel::Model &model) {
+    this->camera_ray = model.camera_ray;
+
+    // Bones
+    this->centers = model.centers;
+    this->bones = model.bones;
+    this->blocks = model.blocks;
+    this->tangent_points = model.tangent_points;
+
+    // DOFs
+    this->dofs = model.dofs;
+    this->theta = model.theta;
+
+    this->has_parent = model.has_parent;
 }
 
 Model::~Model() {}
@@ -39,17 +57,18 @@ void Model::Move(const Thetas &thetas) {
     Thetas translation(DofsSize(), 0); // pose
 
     for (int i = 0; i < DofsSize(); ++i) {
+        float theta_val = has_parent && dofs[i].free_type == kUnderCtrl ? dofs[i].init_val : thetas[i];
         if (dofs[i].type == DofType::kRotation) {
             if (dofs[i].axis_type == AxisType::kX)
-                rotateX[i] = thetas[i];
+                rotateX[i] = theta_val;
             else if (dofs[i].axis_type == AxisType::kY)
-                rotateY[i] = thetas[i];
+                rotateY[i] = theta_val;
             else if (dofs[i].axis_type == AxisType::kZ)
-                rotateZ[i] = thetas[i];
+                rotateZ[i] = theta_val;
             else
                 std::cout << "wrong axis" << std::endl;
         } else if (dofs[i].type == DofType::kTranslation) {
-            translation[i] = thetas[i];
+            translation[i] = theta_val;
         } else {
             std::cout << "wrong theta" << std::endl;
         }

@@ -2,14 +2,21 @@
 
 using namespace smodel;
 
-ModelCtrl::ModelCtrl() {
+ModelCtrl::ModelCtrl() : name_("model"), project_path_("") {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
     selected_centerid = -1;
 }
 
-ModelCtrl::ModelCtrl(const std::string &data_path): data_path_(data_path) {
+ModelCtrl::ModelCtrl(const std::string &project_path): name_("model"), project_path_(project_path) {
+    config_loader = new ModelConfigLoader();
+    semantics = new ModelSemantics(model);
+    parent_bone_id_ = -1;
+    selected_centerid = -1;
+}
+
+ModelCtrl::ModelCtrl(const std::string &name, const std::string &project_path) : name_(name), project_path_(project_path) {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
@@ -32,10 +39,10 @@ ModelCtrl::~ModelCtrl() {
 
 void ModelCtrl::Init() {
     model.Clear();
-    model.centers = config_loader->LoadCenters(data_path_ + "/centers.csv");
-    model.bones = config_loader->LoadBones(data_path_ + "/bones.csv");
-    model.blocks = config_loader->LoadBlocks(data_path_ + "/blocks.csv");
-    model.dofs = config_loader->LoadDofs(data_path_ + "/dofs.csv");
+    model.centers = config_loader->LoadCenters(project_path_ + "/data/" + name_ + "/centers.csv");
+    model.bones = config_loader->LoadBones(project_path_ + "/data/" + name_ + "/bones.csv");
+    model.blocks = config_loader->LoadBlocks(project_path_ + "/data/" + name_ + "/blocks.csv");
+    model.dofs = config_loader->LoadDofs(project_path_ + "/data/" + name_ + "/dofs.csv");
 
     semantics->Init();
 }

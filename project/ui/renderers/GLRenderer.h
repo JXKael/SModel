@@ -46,6 +46,8 @@ protected:
     std::map<std::string, QString> texture_paths;
     std::map<std::string, QOpenGLTexture *> textures;
     std::map<std::string, GLuint> texture_ids;
+
+    std::string name;
 public:
     GLRenderer();
     GLRenderer(const QString &vertex_shader, const QString &frag_shader);
@@ -60,6 +62,8 @@ public:
     inline void SetClearColor(glm::vec4 color) { this->clear_color = color; }
     inline void SetClearColor(float r, float g, float b, float a) { this->clear_color = glm::vec4(r, g, b, a); }
     inline void SetRenderMode(GLenum mode) { this->render_mode = mode; }
+    inline void SetName(const std::string &name) { this->name = name; }
+    inline const std::string &GetName() const { return name; }
 
     virtual void SetVertices(const std::vector<float> &vertices);
     virtual void AddVertices(const std::vector<float> &vertices);

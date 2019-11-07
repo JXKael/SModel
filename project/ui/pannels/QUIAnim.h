@@ -2,7 +2,6 @@
 #define QUI_ANIM_H
 
 #include "QUIConst.h"
-#include "model/ModelCtrl.h"
 
 #include <QDialog>
 #include <QLabel>
@@ -19,17 +18,14 @@
 
 namespace ui {
 
-class QUIPannelCtrl;
-
 class QUIAnim : public QDialog {
     Q_OBJECT
 public:
     explicit QUIAnim(QWidget *patent = 0);
-    explicit QUIAnim(QUIPannelCtrl *pannel_ctrl, std::map<std::string, smodel::ModelCtrl *> &models);
+    explicit QUIAnim(std::map<std::string, smodel::ModelCtrl *> &models);
     ~QUIAnim();
 
 private:
-    QUIPannelCtrl *pannel_ctrl_;
     std::map<std::string, smodel::ModelCtrl *> &models_;
     std::map<std::string, std::map<int, smodel::Thetas>> keypoints;
 
@@ -52,6 +48,7 @@ private:
 
 public:
     void Init();
+    void UpdateModel(const std::string &name, const smodel::Thetas &thetas);
     void UpdateGL();
 
 private:

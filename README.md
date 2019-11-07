@@ -28,10 +28,11 @@ in `CMakeLists.txt`
 
 ### Display
 
-* **press 0**: a dialog of making animation
+* **press 0**: a dialog of displaying the quick saved pose
 * **press 1**: a dialog of tunning the body
 * **press 2**: a dialog of tunning the right hand
 * **press 3**: a dialog of tunning the left hand
+* **press 9**: a dialog of making animation
 * **RB**: rotation
 * **Scroll**: translation
 * **alt+ LB**: focus on the (0, 0, 0)

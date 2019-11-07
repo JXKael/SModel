@@ -2,7 +2,7 @@
 #define MODEL_CONFIG_LOADER_H
 
 #include "ModelType.h"
-#include "csv.h"
+#include "utils/csv.h"
 #include <vector>
 #include <map>
 #include <iostream>
@@ -25,6 +25,7 @@ private:
 
     SphereType convertToSphereType(const int &type);
     DofType convertToDofType(const int &type);
+    DofFreeType convertToDofFreeType(const int &free_type);
     AxisType convertToAxisType(const int &type);
 };
 

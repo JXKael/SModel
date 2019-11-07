@@ -190,7 +190,7 @@ public:
         std::memcpy(buffer, str, (size_t)to_copy_byte_count);
         remaining_byte_count -= to_copy_byte_count;
         str += to_copy_byte_count;
-        return to_copy_byte_count;
+        return (int)to_copy_byte_count;
     }
 
     ~NonOwningStringByteSource() {}

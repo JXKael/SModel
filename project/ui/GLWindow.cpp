@@ -1,4 +1,5 @@
 ﻿#include "GLWindow.h"
+#include "QUIManager.h"
 #include <iostream>
 
 using namespace ui;
@@ -11,56 +12,58 @@ GLWindow::GLWindow(QWidget *parent)
     cursor_pos(0, 0)
 {
     is_mouse_pressing = false;
-    pannel_ctrl = new QUIPannelCtrl(this);
 }
 
 GLWindow::~GLWindow() {
     makeCurrent();
-    models.clear();
-    for (const std::pair<int, GLRenderer *> &renderer_pair : renderers) {
-        if (nullptr != renderer_pair.second)
-            delete renderer_pair.second;
-    }
-    renderers.clear();
-
-    if (nullptr != pannel_ctrl)
-        delete pannel_ctrl;
-    pannel_ctrl = nullptr;
-
+    ClearRenderer();
     doneCurrent();
 }
 
-void GLWindow::SetupRenderers() {
+void GLWindow::SetupRenderers(models_map &models) {
+    this->ClearRenderer();
     // 模型渲染
     int idx = 0;
-    for (const std::pair<std::string, smodel::ModelCtrl *> &model_pair : models) {
-        const smodel::ModelCtrl *model = model_pair.second;
-        ConvolutionRenderer *con_renderer = new ConvolutionRenderer(project_path_, model);
-        AddRenderer(idx, con_renderer);
+    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+        renderers[idx] = std::make_shared<ui::ConvolutionRenderer>(project_path_, it->second);
+        renderers[idx]->SetName(it->second->GetName());
+        renderers_state[idx] = true;
         ++idx;
     }
 
     // 坐标网格渲染
-    GridAxisRenderer *grid_renderer = new GridAxisRenderer(project_path_.c_str());
-    AddRenderer(150, grid_renderer);
+    renderers[150] = std::make_shared<ui::GridAxisRenderer>(project_path_.c_str());
+    renderers[150]->SetName("grid");
+    renderers_state[150] = true;
 
     // center轴渲染
-    CenterAxisRenderer *center_renderer = new CenterAxisRenderer(project_path_.c_str(), models);
-    AddRenderer(3, center_renderer);
+    renderers[3] = std::make_shared<ui::CenterAxisRenderer>(project_path_.c_str(), models);
+    renderers[3]->SetName("select mark");
+    renderers_state[3] = true;
+}
+
+void GLWindow::ClearRenderer() {
+    renderers.clear();
+}
+
+void GLWindow::SetRendererState(const int &id, const bool &is_render) {
+    std::map<int, bool>::iterator it = renderers_state.find(id);
+    if (it != renderers_state.end()) {
+        it->second = is_render;
+    }
 }
 
 void GLWindow::initializeGL() {
-    SetupRenderers();
-    for (const std::pair<int, GLRenderer *> &renderer_pair : renderers) {
-        renderer_pair.second->InitializeGL();
+    for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
+        it->second->InitializeGL();
     }
 
     std::cout << "--> OpenGL 版本: " << glGetString(GL_VERSION) << std::endl;
 }
 
 void GLWindow::resizeGL(int w, int h) {
-    for (const std::pair<int, GLRenderer *> &renderer_pair : renderers) {
-        renderer_pair.second->ResizeGL(w, h);
+    for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
+        it->second->ResizeGL(w, h);
     }
 }
 
@@ -72,14 +75,16 @@ void GLWindow::paintGL() {
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(camera.fovy), (float)this->width() / (float)this->height(), camera.near_plane, camera.far_plane);
 
-    for (const std::pair<int, GLRenderer *> &renderer_pair : renderers) {
-        GLRenderer *renderer = renderer_pair.second;
-        renderer->SetCamera(this->camera);
-        renderer->SetModel(model);
-        renderer->SetView(view);
-        renderer->SetProjection(projection);
+    for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
+        if (renderers_state[it->first]) {
+            GLRenderer *renderer = it->second.get();
+            renderer->SetCamera(this->camera);
+            renderer->SetModel(model);
+            renderer->SetView(view);
+            renderer->SetProjection(projection);
 
-        renderer->PaintGL();
+            renderer->PaintGL();
+        }
     }
 }
 
@@ -150,16 +155,19 @@ void GLWindow::wheelEvent(QWheelEvent *event) {
 void GLWindow::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Qt::Key_0:
-        this->pannel_ctrl->ShowAnimPannel(this->models);
+        QUIManager::Instance().ShowQuickPannel();
         break;
     case Qt::Key_1:
-        this->pannel_ctrl->ShowBodyPannel(this->models["body"]);
+        QUIManager::Instance().ShowBodyPannel();
         break;
     case Qt::Key_2:
-        this->pannel_ctrl->ShowRightHandPannel(this->models["RightHand"]);
+        QUIManager::Instance().ShowRightHandPannel();
         break;
     case Qt::Key_3:
-        this->pannel_ctrl->ShowLeftHandPannel(this->models["LeftHand"]);
+        QUIManager::Instance().ShowLeftHandPannel();
+        break;
+    case Qt::Key_9:
+        QUIManager::Instance().ShowAnimPannel();
         break;
     case Qt::Key_Alt:
         this->camera.SetCameraType(CameraType::kFocus);
@@ -182,4 +190,3 @@ void GLWindow::keyReleaseEvent(QKeyEvent *event) {
     }
     this->update();
 }
-

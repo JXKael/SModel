@@ -1,5 +1,5 @@
-﻿#ifndef GLWINDWO_H
-#define GLWINDWO_H
+﻿#ifndef GL_WINDOW_H
+#define GL_WINDOW_H
 
 #include <assert.h>
 
@@ -8,20 +8,17 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 
-#include "Camera.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "model/ModelCtrl.h"
+#include "QUIConst.h"
 
-#include "OpenGL/ConvolutionRenderer.h"
-#include "OpenGL/FixAxisRenderer.h"
-#include "OpenGL/CenterAxisRenderer.h"
-#include "OpenGL/GridAxisRenderer.h"
-
-#include "pannels/QUIPannelCtrl.h"
+#include "Camera.h"
+#include "renderers/ConvolutionRenderer.h"
+#include "renderers/FixAxisRenderer.h"
+#include "renderers/CenterAxisRenderer.h"
+#include "renderers/GridAxisRenderer.h"
 
 namespace ui {
 
@@ -38,13 +35,11 @@ private:
     glm::vec3 camera_center;
     Camera camera;
 
-    std::map<int, GLRenderer *> renderers;
-    std::map<std::string, smodel::ModelCtrl *> models;
+    renderers_map renderers;
+    std::map<int, bool> renderers_state;
 
     bool is_mouse_pressing;
     glm::uvec2 cursor_pos;
-
-    QUIPannelCtrl *pannel_ctrl;
 
     std::string project_path_;
 
@@ -52,10 +47,12 @@ public:
     GLWindow(QWidget *parent = nullptr);
     ~GLWindow();
 
-    void SetupRenderers();
+    void SetupRenderers(models_map &models);
+    void ClearRenderer();
+    void SetRendererState(const int &id, const bool &is_render);
+    inline renderers_map &GetRenderers() { return renderers; }
+
     inline bool IsMousePressing() { return is_mouse_pressing; }
-    inline void AddModel(const std::string name, smodel::ModelCtrl &model) { models[name] = &model; }
-    inline void AddRenderer(const int &order, GLRenderer *renderer) { renderers[order] = renderer; }
     inline void SetProjectPath(const std::string &project_path) { this->project_path_ = project_path; }
 
 protected:
@@ -74,4 +71,4 @@ protected:
 
 } // namespace ui
 
-#endif // GLWINDWO_H
+#endif // GL_WINDOW_H

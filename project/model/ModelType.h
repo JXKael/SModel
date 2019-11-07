@@ -8,6 +8,10 @@
 
 namespace smodel {
 
+#define BODY "body"
+#define RIGHT_HAND "right_hand"
+#define LEFT_HAND "left_hand"
+
 #define BLOCK_UNDEFINED 32767
 #define VEC3_DIM 3
 #define MAT4_DIM 4
@@ -35,6 +39,11 @@ enum SphereType {
 enum DofType {
     kRotation = 0,
     kTranslation = 1
+};
+
+enum DofFreeType {
+    kFree = 0,
+    kUnderCtrl = 1
 };
 
 enum AxisType {
@@ -123,6 +132,7 @@ struct Dof {
     int id;
     std::string name;
     DofType type;
+    DofFreeType free_type;
     AxisType axis_type;
     int bone_id;
     float min;
@@ -132,15 +142,16 @@ struct Dof {
     vec3 axis;
     Bone *bone;
 
-    Dof() : id(-1), name(""), type(kRotation), axis_type(kX), min(-1.0f), max(1.0f), init_val(0.0f), bone_id(-1)
+    Dof() : id(-1), name(""), type(kRotation), free_type(kFree), axis_type(kX), min(-1.0f), max(1.0f), init_val(0.0f), bone_id(-1)
     {
         axis = ParseToVec(axis_type);
         bone = nullptr;
     }
-    Dof(int _id, std::string _name, DofType _type, AxisType _axis_type, float _min, float _max, float _init_val, int _bone_id)
+    Dof(int _id, std::string _name, DofType _type, DofFreeType _free_type, AxisType _axis_type, float _min, float _max, float _init_val, int _bone_id)
       : id(_id),
         name(_name),
         type(_type),
+        free_type(_free_type),
         axis_type(_axis_type),
         min(_min), max(_max), init_val(_init_val),
         bone_id(_bone_id)
