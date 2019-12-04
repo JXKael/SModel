@@ -6,6 +6,7 @@
 #include "pannels/QUIAnim.h"
 #include "pannels/QUIDashboard.h"
 #include "pannels/QUIQuick.h"
+#include "pannels/QUIRenderImg.h"
 
 namespace ui {
 
@@ -17,6 +18,7 @@ private:
     QUIDashboard *ui_right_hand;
     QUIDashboard *ui_left_hand;
     QUIAnim *ui_anim;
+    QUIRenderImg *ui_render_img;
 
     std::string name;
     int center_id;
@@ -40,6 +42,8 @@ public:
     void SetProjectPath(const std::string &path) { this->project_path_ = path; }
     void SetGLWindow(GLWindow *window) { gl_window = window; }
     inline void AddModel(smodel::ModelCtrl &model) { models[model.GetName()] = &model; }
+    smodel::ModelCtrl *GetModel(const std::string &name);
+    inline GLWindow *GetGLWindow() const { return gl_window; }
 
 public:
     void ShowQuickPannel();
@@ -47,6 +51,7 @@ public:
     void ShowRightHandPannel();
     void ShowLeftHandPannel();
     void ShowAnimPannel();
+    void ShowRenderImgPannel();
     void SetSelected(const std::string &name, const int &center_id);
     const std::string &GetSelectedModel() const;
     const int &GetSelectedCenterId() const;

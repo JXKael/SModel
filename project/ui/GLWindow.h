@@ -26,6 +26,8 @@ namespace ui {
 
 const glm::vec3 kModelCenter = glm::vec3(0, 0, 0);
 const glm::vec3 kCameraCenter = glm::vec3(0, 20, 1200);
+const glm::vec3 kModelCenter_RenderHand = glm::vec3(0, 0, 123);
+const glm::vec3 kCameraCenter_RenderHand = glm::vec3(0, 0, 600);
 
 class GLWindow : public QOpenGLWidget {
     Q_OBJECT
@@ -55,6 +57,10 @@ public:
     inline bool IsMousePressing() { return is_mouse_pressing; }
     inline void SetProjectPath(const std::string &project_path) { this->project_path_ = project_path; }
 
+    void SaveScreenImg(const std::string &file_name);
+    void SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix);
+    void SetRenderHandScreen();
+
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -67,6 +73,8 @@ protected:
 
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+
+    void ProcessImage();
 }; // class GLWindow
 
 } // namespace ui

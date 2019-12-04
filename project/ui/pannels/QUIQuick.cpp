@@ -17,6 +17,7 @@ QUIQuick::~QUIQuick() {
     init_thetas.clear();
     quick_thetas.clear();
     check_boxes.clear();
+    model_btn.clear();
     quick_btns.clear();
 
     delete quick_mapper;
@@ -28,8 +29,8 @@ void QUIQuick::Init() {
     QHBoxLayout *layout = new QHBoxLayout(this); // 总的layout
     layout->setAlignment(Qt::AlignLeft);
 
-    layout->addLayout(this->InitCheckBoxes());
     this->sel_name = models_.begin()->first;
+    layout->addLayout(this->InitCheckBoxes());
     layout->addLayout(this->InitQuickThetas(sel_name));
 
     this->ConnectMapper();
@@ -50,11 +51,12 @@ QVBoxLayout *QUIQuick::InitCheckBoxes() {
     QVBoxLayout *layout = new QVBoxLayout();
     layout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
+    // 模型按钮
     for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
         const std::string &name = it->first;
-        // 快捷操作
         QPushButton *btn = new QPushButton();
-        btn->setText(QString("%1 >>").arg(name.c_str()));
+        QString btn_text = sel_name == name ? QString("%1 >>").arg(name.c_str()) : QString("%1").arg(name.c_str());
+        btn->setText(btn_text);
         btn->setFocusPolicy(Qt::NoFocus);
         btn->setFixedWidth(120);
         btn->setFixedHeight(SINGLE_LINE_HEIGHT);
@@ -63,6 +65,8 @@ QVBoxLayout *QUIQuick::InitCheckBoxes() {
         checkbox_btn_mapper->setMapping(btn, QString(name.c_str()));
 
         layout->addWidget(btn);
+
+        model_btn[name] = btn;
     }
     layout->addSpacing(100);
     for (renderers_map::iterator it = renderers_.begin(); it != renderers_.end(); ++it) {
@@ -96,8 +100,17 @@ QVBoxLayout *QUIQuick::InitQuickThetas(const std::string &name) {
     btn_reset->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_reset, SIGNAL(pressed()), this, SLOT(onClickBtnReset()));
 
+    // 批渲染RGB按钮
+    QPushButton *btn_render_img = new QPushButton();
+    btn_render_img->setText("Render screen [Batch]");
+    btn_render_img->setFocusPolicy(Qt::NoFocus);
+    btn_render_img->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
+    btn_render_img->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_render_img, SIGNAL(pressed()), this, SLOT(onClickBtnRenderImg()));
+
     layout->addWidget(this->InitQuickScroll(name));
     layout->addWidget(btn_reset);
+    layout->addWidget(btn_render_img);
 
     return layout;
 }
@@ -222,8 +235,12 @@ void QUIQuick::onCheckBoxToggled(int id) {
 }
 
 void QUIQuick::onModelBtnClick(const QString &name) {
-    this->UpdateQuickScrollContent(name.toStdString());
     this->sel_name = name.toStdString();
+    for (std::map<std::string, QPushButton *>::iterator it = model_btn.begin(); it != model_btn.end(); ++it) {
+        QString btn_text = sel_name == it->first ? QString("%1 >>").arg(it->first.c_str()) : QString("%1").arg(it->first.c_str());
+        it->second->setText(btn_text);
+    }
+    this->UpdateQuickScrollContent(name.toStdString());
 }
 
 void QUIQuick::onQuickBtnClick(int id) {
@@ -241,4 +258,8 @@ void QUIQuick::onClickBtnReset() {
         it->second->Update();
         UpdateGL();
     }
+}
+
+void QUIQuick::onClickBtnRenderImg() {
+    QUIManager::Instance().ShowRenderImgPannel();
 }

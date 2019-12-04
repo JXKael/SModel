@@ -22,7 +22,12 @@ include(cmake/modules/ConfigureQt.cmake)
 # --------------------------- GLM 0.9.9.6
 include(cmake/modules/ConfigureGLM.cmake)
 #  --------------------------- eigen 3.3.7
-include(cmake/modules/COnfigureEigen.cmake)
+include(cmake/modules/ConfigureEigen.cmake)
+# ---------------------------- OpenCV 4.1.1
+# you may need to add OpenCV_DIR: ..\OpenCV\OpenCV4.1.1\opencv\build\ to your
+# environment variable and add ..\OpenCV\OpenCV4.1.1\opencv\build\x64\vc15\bin\
+# to ensure the application to run
+include(cmake/modules/ConfigureOpenCV.cmake)
 
 # >>> --------------------------- 子项目配置
 add_subdirectory(project/utils)

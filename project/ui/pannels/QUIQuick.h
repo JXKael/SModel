@@ -43,6 +43,8 @@ private:
     std::map<std::string, std::vector<float>> init_thetas;
     // 快捷参数
     quick_thetas_list quick_thetas;
+    // 左上按钮
+    std::map<std::string, QPushButton *> model_btn;
     // 复选框
     std::map<int, QCheckBox *> check_boxes;
     // 滑动框
@@ -75,6 +77,7 @@ private Q_SLOTS:
     void onModelBtnClick(const QString &name);
     void onQuickBtnClick(int id);
     void onClickBtnReset();
+    void onClickBtnRenderImg();
 };
 
 }

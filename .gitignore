@@ -55,3 +55,4 @@ build
 *.sublime-*
 .idea
 cmake-build-debug
+project/data/images/

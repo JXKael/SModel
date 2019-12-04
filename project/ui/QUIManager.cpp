@@ -9,6 +9,7 @@ QUIManager::QUIManager() {
     ui_right_hand = nullptr;
     ui_left_hand = nullptr;
     ui_anim = nullptr;
+    ui_render_img = nullptr;
 }
 
 QUIManager::~QUIManager() {}
@@ -41,6 +42,11 @@ const std::string &QUIManager::GetSelectedModel() const {
 
 const int &QUIManager::GetSelectedCenterId() const {
     return this->center_id;
+}
+
+smodel::ModelCtrl *QUIManager::GetModel(const std::string &name) {
+    models_map::iterator it = models.find(name);
+    return it != models.end() ? it->second : nullptr;
 }
 
 void QUIManager::ShowQuickPannel() {
@@ -127,6 +133,20 @@ void QUIManager::ShowAnimPannel() {
         bool isVisible = ui_anim->isVisible();
         if (!isVisible) {
             ui_anim->show();
+        }
+    }
+}
+
+void QUIManager::ShowRenderImgPannel() {
+    if (nullptr == ui_render_img) {
+        ui_render_img = new QUIRenderImg(project_path_);
+        ui_render_img->setParent(gl_window, Qt::WindowType::Dialog);
+        ui_render_img->Init();
+    }
+    if (nullptr != ui_render_img) {
+        bool isVisible = ui_render_img->isVisible();
+        if (!isVisible) {
+            ui_render_img->show();
         }
     }
 }
