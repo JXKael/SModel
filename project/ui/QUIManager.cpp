@@ -49,6 +49,14 @@ smodel::ModelCtrl *QUIManager::GetModel(const std::string &name) {
     return it != models.end() ? it->second : nullptr;
 }
 
+models_map &QUIManager::GetModels() {
+    return models;
+}
+
+QUIQuick *QUIManager::GetUIQuick() {
+    return ui_quick;
+}
+
 void QUIManager::ShowQuickPannel() {
     if (nullptr == ui_quick) {
         ui_quick = new QUIQuick(project_path_, models, gl_window->GetRenderers());
@@ -139,7 +147,7 @@ void QUIManager::ShowAnimPannel() {
 
 void QUIManager::ShowRenderImgPannel() {
     if (nullptr == ui_render_img) {
-        ui_render_img = new QUIRenderImg(project_path_);
+        ui_render_img = new QUIRenderImg(project_path_, models);
         ui_render_img->setParent(gl_window, Qt::WindowType::Dialog);
         ui_render_img->Init();
     }

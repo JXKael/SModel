@@ -16,21 +16,26 @@
 #include <QSignalMapper>
 #include <QTimer>
 
+#include <iomanip>
+
 namespace ui {
 
 class QUIRenderImg : public QDialog {
     Q_OBJECT
 public:
     explicit QUIRenderImg(QWidget *patent = 0);
-    explicit QUIRenderImg(const std::string &project_path);
+    QUIRenderImg(const std::string &project_path, models_map &models);
     ~QUIRenderImg();
 
 private:
     const std::string project_path_;
+    models_map &models_;
 
     QLineEdit *file_path;
     QLineEdit *file_name;
     QLabel *file_suffix;
+
+    std::map<std::string, int> pose_mask_map;
 
 public:
     void Init();
@@ -38,9 +43,18 @@ public:
     void UpdateGL();
 
 private Q_SLOTS:
-    void onClickBtnRenderHand();
-    void onClickBtnRender();
+    void onClickBtnSetRenderHand();
+    void onClickBtnSetRenderMask();
+    void onClickBtnRenderResetScreen();
+
+    void onClickBtnRenderOne();
     void onClickBtnRenderBatch();
+
+    void onClickBtnRenderMaskOne();
+    void onClickBtnRenderMaskBatch();
+
+    void onClickBtnOneForAll();
+    void onClickBtnOneForAllMask();
 };
 // class QUIRenderImg
 

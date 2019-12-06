@@ -2,14 +2,18 @@
 #include "QUIManager.h"
 
 #include <iostream>
+#include <iomanip>
 #include "direct.h"
 #include <io.h>
 
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include "opencv2/opencv.hpp"
 
 using namespace ui;
+
+cv::Mat QImage2cvMat(QImage &image, bool clone = true, bool rb_swap = false);
 
 GLWindow::GLWindow(QWidget *parent)
   : QOpenGLWidget(parent),
@@ -33,6 +37,7 @@ void GLWindow::SetupRenderers(models_map &models) {
     int idx = 0;
     for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
         renderers[idx] = std::make_shared<ui::ConvolutionRenderer>(project_path_, it->second);
+        //renderers[idx] = std::make_shared<ui::ConvolutionRendererMask>(project_path_, it->second);
         renderers[idx]->SetName(it->second->GetName());
         renderers_state[idx] = true;
         ++idx;
@@ -115,15 +120,96 @@ void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::strin
         int idx = 1;
         float yaw_stride = 360.0f / 32.0f;
         float pitch_stride = 178.0f / 32.0f;
+        std::cout << "--> Starting rendering image batch:" << std::endl;
         for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
             for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
                 camera.SetEulerAngles(yaw, pitch);
                 camera.UpdateFocusCameraVectors();
                 this->update();
-                SaveScreenImg(flle_folder + file_name + "-" + QString("%1").arg(idx++).toStdString() + "." + file_suffix);
+                const std::string file_name_c = QString("%1-%2.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
+                std::cout << "\r... Rendering........[" << file_name_c << "]";
+
+                SaveScreenImg(flle_folder + file_name_c);
             }
         }
+        std::cout << "\r--> Rendering over !                              " << std::endl;
     }
+}
+
+void GLWindow::SaveScreenImgMask(const std::string &file_name) {
+    QImage img = grabFramebuffer();
+    cv::Mat rgb_image = QImage2cvMat(img);
+    int rows = rgb_image.rows;
+    int cols = rgb_image.cols;
+    cv::Mat mask_img(rows, cols, CV_8UC1);
+    for (int j = 0; j < rows; ++j) {
+        // uchar* outData = outImage.ptr<uchar>(k);
+        for (int i = 0; i < cols; ++i)
+        {
+            const cv::Vec4b &pixel = rgb_image.at<cv::Vec4b>(j, i);
+            if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255) {
+                mask_img.at<uchar>(j, i) = 0;
+            }
+            else if (pixel[0] == pixel[1] && pixel[0] == pixel[2])
+                mask_img.at<uchar>(j, i) = pixel[0];
+            else
+                mask_img.at<uchar>(j, i) = 0;
+        }
+    }
+    cv::imwrite(file_name, mask_img);
+}
+
+void GLWindow::SaveScreenImgMaskBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix) {
+    smodel::ModelCtrl *body_model = QUIManager::Instance().GetModel(BODY);
+    if (nullptr != body_model) {
+        float yaw = 0.0f;   // 0~360
+        float pitch = 0.0f; // -89~89
+
+        const std::string flle_folder = file_path + file_name + "-Mask/";
+        _mkdir(flle_folder.c_str());
+        int idx = 1;
+        float yaw_stride = 360.0f / 32.0f;
+        float pitch_stride = 178.0f / 32.0f;
+        std::cout << "--> Starting rendering image mask batch:" << std::endl;
+        for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
+            for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
+                camera.SetEulerAngles(yaw, pitch);
+                camera.UpdateFocusCameraVectors();
+                this->update();
+                const std::string file_name_c = QString("%1-%2-mask.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
+                std::cout << "\r... Rendering........[" << file_name_c << "]";
+
+                SaveScreenImgMask(flle_folder + file_name_c);
+            }
+        }
+        std::cout << "\r--> Rendering over !                              " << std::endl;
+    }
+}
+
+cv::Mat QImage2cvMat(QImage &image, bool clone, bool rb_swap)
+{
+    cv::Mat mat;
+    //qDebug() << image.format();
+    switch (image.format())
+    {
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC4, (void *)image.constBits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        break;
+    case QImage::Format_RGB888:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC3, (void *)image.constBits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        // if (rb_swap) cv::cvtColor(mat, mat, cv::CV_BGR2RGB);
+        break;
+    case QImage::Format_Indexed8:
+    case QImage::Format_Grayscale8:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC1, (void *)image.bits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        break;
+    }
+    return mat;
 }
 
 void GLWindow::SetRenderHandScreen() {
@@ -136,6 +222,56 @@ void GLWindow::SetRenderHandScreen() {
         this->resize(800, 600);
         this->update();
     }
+}
+
+void GLWindow::SetRenderMaskScreen(std::map<std::string, int> &mask_vals) {
+    smodel::ModelCtrl *left_hand_model = QUIManager::Instance().GetModel(LEFT_HAND);
+    smodel::ModelCtrl *right_hand_model = QUIManager::Instance().GetModel(RIGHT_HAND);
+    if (nullptr != left_hand_model && nullptr != right_hand_model) {
+        //models_map &models = QUIManager::Instance().GetModels();
+        // 修改着色器
+        //int model_count = models.size();
+        //for (int i = 0; i < model_count; ++i) {
+        //    renderers.erase(i);
+        //    renderers_state.erase(i);
+        //}
+        //int idx = 0;
+        //for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+        //    // std::cout << renderers[idx].use_count() << std::endl;
+        //    const std::string model_name = it->second->GetName();
+        //    std::map<std::string, int>::iterator mask_it = mask_vals.find(model_name);
+        //    int mask_val = mask_it != mask_vals.end() ? mask_it->second: 0;
+        //    renderers[idx] = std::make_shared<ui::ConvolutionRendererMask>(project_path_, it->second, mask_val);
+        //    renderers[idx]->SetName(model_name);
+        //    // renderers[idx]->InitializeGL();
+        //    renderers_state[idx] = true;
+        //    ++idx;
+        //}
+
+        model_center = kModelCenter_RenderHand;
+        camera_center = kCameraCenter_RenderHand;
+        camera.Reset(camera_center, model_center);
+        // this->initializeGL();
+        this->update();
+        this->resize(800, 600);
+    }
+}
+
+void GLWindow::ResetScreen() {
+    camera_center = kCameraCenter;
+    model_center = kModelCenter;
+    camera.Reset(camera_center, model_center);
+    this->resize(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
+    this->update();
+}
+
+void GLWindow::SetMaskVal(const std::string &model_name, const int &mask_val) {
+    //for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
+    //    if (it->second->GetName() == model_name) {
+    //        ConvolutionRendererMask *p = (ConvolutionRendererMask *)(it->second.get());
+    //        p->SetMaskVal(mask_val);
+    //    }
+    //}
 }
 
 void GLWindow::mousePressEvent(QMouseEvent *event) {
@@ -232,9 +368,9 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
     this->update();
 }
 
-void GLWindow::keyReleaseEvent(QKeyEvent *event) {
-
-}
+//void GLWindow::keyReleaseEvent(QKeyEvent *event) {
+//
+//}
 
 std::vector<std::string> listFiles(const char *dir) {
     std::vector<std::string> names;
@@ -275,8 +411,8 @@ std::vector<std::string> listFiles(const char *dir) {
 }
 
 void GLWindow::ProcessImage() {
-    const std::string path = "E:/Code/python/PytorchPlay/data/SingleHand/RGBImages/";
-    const std::string dst_path = "E:/Code/python/PytorchPlay/data/SingleHand/Masks/";
+    const std::string path = "E:/Code/GitHub/SModel/project/data/images/A-RGB/";
+    const std::string dst_path = "E:/Code/GitHub/SModel/project/data/images/Masks/";
     std::vector<std::string> all_files = listFiles(path.c_str());
     int idx = 0;
     for (const std::string &file_name : all_files) {
@@ -302,5 +438,4 @@ void GLWindow::ProcessImage() {
         cv::imwrite(dst_path + out_name, mask_img);
         ++idx;
     }
-
 }

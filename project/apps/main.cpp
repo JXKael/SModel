@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     body.AddChild(left_hand, 9);
 
     ui::GLWindow window;
-    window.resize(1600, 900);
+    window.resize(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
     window.SetProjectPath(project_path);
 
     ui::QUIManager::Instance().SetProjectPath(project_path);
