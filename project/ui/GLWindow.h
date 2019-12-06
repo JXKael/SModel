@@ -19,13 +19,16 @@
 #include "renderers/FixAxisRenderer.h"
 #include "renderers/CenterAxisRenderer.h"
 #include "renderers/GridAxisRenderer.h"
+#include "renderers/ConvolutionRendererMask.h"
+
+#define M_PI 3.14159265358979323846
+#define GL_WINDOW_WIDTH 1600
+#define GL_WINDOW_HEIGHT 900
 
 namespace ui {
 
-#define M_PI 3.14159265358979323846
-
 const glm::vec3 kModelCenter = glm::vec3(0, 0, 0);
-const glm::vec3 kCameraCenter = glm::vec3(0, 20, 1200);
+const glm::vec3 kCameraCenter = glm::vec3(0, 100, 1200);
 const glm::vec3 kModelCenter_RenderHand = glm::vec3(0, 0, 123);
 const glm::vec3 kCameraCenter_RenderHand = glm::vec3(0, 0, 600);
 
@@ -38,7 +41,7 @@ private:
     Camera camera;
 
     renderers_map renderers;
-    std::map<int, bool> renderers_state;
+    renderers_state_map renderers_state;
 
     bool is_mouse_pressing;
     glm::uvec2 cursor_pos;
@@ -53,13 +56,19 @@ public:
     void ClearRenderer();
     void SetRendererState(const int &id, const bool &is_render);
     inline renderers_map &GetRenderers() { return renderers; }
+    inline renderers_state_map &GetRenderersState() { return renderers_state; }
 
     inline bool IsMousePressing() { return is_mouse_pressing; }
     inline void SetProjectPath(const std::string &project_path) { this->project_path_ = project_path; }
 
     void SaveScreenImg(const std::string &file_name);
     void SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix);
+    void SaveScreenImgMask(const std::string &file_name);
+    void SaveScreenImgMaskBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix);
+
     void SetRenderHandScreen();
+    void ResetScreen();
+    void SetMaskVal(const std::string &model_name, const int &mask_val);
 
 protected:
     void initializeGL() override;
@@ -72,7 +81,7 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 
     void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
+    // void keyReleaseEvent(QKeyEvent *event) override;
 
     void ProcessImage();
 }; // class GLWindow

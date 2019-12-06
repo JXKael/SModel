@@ -44,6 +44,15 @@
 typedef std::map<std::string, smodel::ModelCtrl *> models_map;
 
 typedef std::map<int, std::shared_ptr<ui::GLRenderer>> renderers_map;
+typedef std::map<int, bool> renderers_state_map;
+
+// model_name->thetas
+typedef std::pair<std::string, smodel::Thetas> quick_theta_pair;
+typedef std::vector<quick_theta_pair> quick_thetas_list;
+
+// model_name->mask
+typedef std::pair<std::string, int> quick_mask_pair;
+typedef std::vector<quick_mask_pair> quick_mask_list;
 
 enum ParamType {
     kSlope = 0, // 斜率

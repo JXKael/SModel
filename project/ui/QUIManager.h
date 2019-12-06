@@ -43,7 +43,9 @@ public:
     void SetGLWindow(GLWindow *window) { gl_window = window; }
     inline void AddModel(smodel::ModelCtrl &model) { models[model.GetName()] = &model; }
     smodel::ModelCtrl *GetModel(const std::string &name);
+    models_map &GetModels();
     inline GLWindow *GetGLWindow() const { return gl_window; }
+    QUIQuick *GetUIQuick();
 
 public:
     void ShowQuickPannel();

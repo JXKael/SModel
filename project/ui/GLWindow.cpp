@@ -2,14 +2,20 @@
 #include "QUIManager.h"
 
 #include <iostream>
+#include <iomanip>
 #include "direct.h"
 #include <io.h>
 
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include "opencv2/opencv.hpp"
 
 using namespace ui;
+
+std::vector<std::string> listFiles(const char *dir);
+cv::Mat QImage2cvMat(QImage &image, bool clone = true, bool rb_swap = false);
+cv::Mat convertToMaskImg(cv::Mat &rgba_img);
 
 GLWindow::GLWindow(QWidget *parent)
   : QOpenGLWidget(parent),
@@ -37,16 +43,23 @@ void GLWindow::SetupRenderers(models_map &models) {
         renderers_state[idx] = true;
         ++idx;
     }
+    // mask渲染
+    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+        renderers[idx] = std::make_shared<ui::ConvolutionRendererMask>(project_path_, it->second);
+        renderers[idx]->SetName(it->second->GetName() + "_mask");
+        renderers_state[idx] = false;
+        ++idx;
+    }
+
+    // center轴渲染
+    renderers[idx] = std::make_shared<ui::CenterAxisRenderer>(project_path_.c_str(), models);
+    renderers[idx]->SetName("select mark");
+    renderers_state[idx] = true;
 
     // 坐标网格渲染
     renderers[150] = std::make_shared<ui::GridAxisRenderer>(project_path_.c_str());
     renderers[150]->SetName("grid");
     renderers_state[150] = true;
-
-    // center轴渲染
-    renderers[3] = std::make_shared<ui::CenterAxisRenderer>(project_path_.c_str(), models);
-    renderers[3]->SetName("select mark");
-    renderers_state[3] = true;
 }
 
 void GLWindow::ClearRenderer() {
@@ -54,7 +67,7 @@ void GLWindow::ClearRenderer() {
 }
 
 void GLWindow::SetRendererState(const int &id, const bool &is_render) {
-    std::map<int, bool>::iterator it = renderers_state.find(id);
+    renderers_state_map::iterator it = renderers_state.find(id);
     if (it != renderers_state.end()) {
         it->second = is_render;
     }
@@ -100,8 +113,8 @@ void GLWindow::paintGL() {
 
 // Render Images
 void GLWindow::SaveScreenImg(const std::string &file_name) {
-    QImage img = grabFramebuffer();
-    img.save(file_name.c_str(), 0, 100);
+    cv::Mat rgba_image = QImage2cvMat(grabFramebuffer());
+    cv::imwrite(file_name, rgba_image);
 }
 
 void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix) {
@@ -115,14 +128,51 @@ void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::strin
         int idx = 1;
         float yaw_stride = 360.0f / 32.0f;
         float pitch_stride = 178.0f / 32.0f;
+        std::cout << "--> Starting rendering image batch:" << std::endl;
         for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
             for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
                 camera.SetEulerAngles(yaw, pitch);
                 camera.UpdateFocusCameraVectors();
                 this->update();
-                SaveScreenImg(flle_folder + file_name + "-" + QString("%1").arg(idx++).toStdString() + "." + file_suffix);
+                const std::string file_name_c = QString("%1-%2.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
+                std::cout << "\r... Rendering........[" << file_name_c << "]";
+
+                SaveScreenImg(flle_folder + file_name_c);
             }
         }
+        std::cout << "\r--> Rendering over !                              " << std::endl;
+    }
+}
+
+void GLWindow::SaveScreenImgMask(const std::string &file_name) {
+    cv::Mat rgba_image = QImage2cvMat(grabFramebuffer());
+    cv::imwrite(file_name, convertToMaskImg(rgba_image));
+}
+
+void GLWindow::SaveScreenImgMaskBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix) {
+    smodel::ModelCtrl *body_model = QUIManager::Instance().GetModel(BODY);
+    if (nullptr != body_model) {
+        float yaw = 0.0f;   // 0~360
+        float pitch = 0.0f; // -89~89
+
+        const std::string flle_folder = file_path + file_name + "-Mask/";
+        _mkdir(flle_folder.c_str());
+        int idx = 1;
+        float yaw_stride = 360.0f / 32.0f;
+        float pitch_stride = 178.0f / 32.0f;
+        std::cout << "--> Starting rendering image mask batch:" << std::endl;
+        for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
+            for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
+                camera.SetEulerAngles(yaw, pitch);
+                camera.UpdateFocusCameraVectors();
+                this->update();
+                const std::string file_name_c = QString("%1-%2-mask.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
+                std::cout << "\r... Rendering........[" << file_name_c << "]";
+
+                this->SaveScreenImgMask(flle_folder + file_name_c);
+            }
+        }
+        std::cout << "\r--> Rendering over !                              " << std::endl;
     }
 }
 
@@ -137,6 +187,27 @@ void GLWindow::SetRenderHandScreen() {
         this->update();
     }
 }
+
+void GLWindow::ResetScreen() {
+    camera_center = kCameraCenter;
+    model_center = kModelCenter;
+    camera.Reset(camera_center, model_center);
+    this->resize(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
+    this->update();
+}
+
+void GLWindow::SetMaskVal(const std::string &model_name, const int &mask_val) {
+    for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
+        if (it->second->GetName() == (model_name + "_mask")) {
+            ConvolutionRendererMask *p = (ConvolutionRendererMask *)(it->second.get());
+            p->SetMaskVal(mask_val);
+            break;
+        }
+    }
+}
+
+
+// event
 
 void GLWindow::mousePressEvent(QMouseEvent *event) {
     cursor_pos.x = event->x();
@@ -232,8 +303,37 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
     this->update();
 }
 
-void GLWindow::keyReleaseEvent(QKeyEvent *event) {
 
+// other function
+
+void GLWindow::ProcessImage() {
+    const std::string path = "E:/Code/GitHub/SModel/project/data/images/A-RGB/";
+    const std::string dst_path = "E:/Code/GitHub/SModel/project/data/images/Masks/";
+    std::vector<std::string> all_files = listFiles(path.c_str());
+    int idx = 0;
+    for (const std::string &file_name : all_files) {
+        std::cout << "Porcessing No." << idx << ": " << file_name << std::endl;
+        cv::Mat rgb_image = cv::imread(path + file_name);
+        int rows = rgb_image.rows;
+        int cols = rgb_image.cols;
+        cv::Mat mask_img(rows, cols, CV_8UC1);
+        for (int j = 0; j < rows; ++j) {
+            // uchar* outData = outImage.ptr<uchar>(k);
+            for (int i = 0; i < cols ; ++i)
+            {
+                const cv::Vec3b &pixel = rgb_image.at<cv::Vec3b>(j, i);
+                if (pixel[0] >= 245 && pixel[1] >= 245 && pixel[2] >= 245) {
+                    mask_img.at<uchar>(j, i) = 0;
+                }
+                else {
+                    mask_img.at<uchar>(j, i) = 4;
+                }
+            }
+        }
+        std::string out_name = file_name.substr(0, file_name.find_last_of(".")) + ".png";
+        cv::imwrite(dst_path + out_name, mask_img);
+        ++idx;
+    }
 }
 
 std::vector<std::string> listFiles(const char *dir) {
@@ -274,33 +374,47 @@ std::vector<std::string> listFiles(const char *dir) {
     return names;
 }
 
-void GLWindow::ProcessImage() {
-    const std::string path = "E:/Code/python/PytorchPlay/data/SingleHand/RGBImages/";
-    const std::string dst_path = "E:/Code/python/PytorchPlay/data/SingleHand/Masks/";
-    std::vector<std::string> all_files = listFiles(path.c_str());
-    int idx = 0;
-    for (const std::string &file_name : all_files) {
-        std::cout << "Porcessing No." << idx << ": " << file_name << std::endl;
-        cv::Mat rgb_image = cv::imread(path + file_name);
-        int rows = rgb_image.rows;
-        int cols = rgb_image.cols;
-        cv::Mat mask_img(rows, cols, CV_8UC1);
-        for (int j = 0; j < rows; ++j) {
-            // uchar* outData = outImage.ptr<uchar>(k);
-            for (int i = 0; i < cols ; ++i)
-            {
-                const cv::Vec3b &pixel = rgb_image.at<cv::Vec3b>(j, i);
-                if (pixel[0] >= 245 && pixel[1] >= 245 && pixel[2] >= 245) {
-                    mask_img.at<uchar>(j, i) = 0;
-                }
-                else {
-                    mask_img.at<uchar>(j, i) = 4;
-                }
-            }
-        }
-        std::string out_name = file_name.substr(0, file_name.find_last_of(".")) + ".png";
-        cv::imwrite(dst_path + out_name, mask_img);
-        ++idx;
+cv::Mat QImage2cvMat(QImage &image, bool clone, bool rb_swap)
+{
+    cv::Mat mat;
+    qDebug() << image.format();
+    switch (image.format())
+    {
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC4, (void *)image.constBits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        break;
+    case QImage::Format_RGB888:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC3, (void *)image.constBits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        // if (rb_swap) cv::cvtColor(mat, mat, cv::CV_BGR2RGB);
+        break;
+    case QImage::Format_Indexed8:
+    case QImage::Format_Grayscale8:
+        mat = cv::Mat(image.height(), image.width(), CV_8UC1, (void *)image.bits(), image.bytesPerLine());
+        if (clone)  mat = mat.clone();
+        break;
     }
+    return mat;
+}
 
+cv::Mat convertToMaskImg(cv::Mat &rgba_img) {
+    int rows = rgba_img.rows;
+    int cols = rgba_img.cols;
+    cv::Mat mask_img(rows, cols, CV_8UC1);
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i)
+        {
+            const cv::Vec4b &pixel = rgba_img.at<cv::Vec4b>(j, i);
+            if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255)
+                mask_img.at<uchar>(j, i) = 0; // 背景为黑色
+            else if (pixel[0] == pixel[1] && pixel[0] == pixel[2])
+                mask_img.at<uchar>(j, i) = pixel[0];
+            else
+                mask_img.at<uchar>(j, i) = 0;
+        }
+    }
+    return mask_img;
 }

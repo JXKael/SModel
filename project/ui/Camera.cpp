@@ -1,4 +1,5 @@
 ﻿#include "Camera.h"
+
 using namespace ui;
 
 // Constructor with vectors

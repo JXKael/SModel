@@ -1,7 +1,7 @@
 ﻿#ifndef QUI_ANIM_H
 #define QUI_ANIM_H
 
-#include "QUIConst.h"
+#include "../QUIConst.h"
 
 #include <QDialog>
 #include <QLabel>

@@ -1,7 +1,7 @@
 ﻿#ifndef QUI_BODY_PANNEL_H
 #define QUI_BODY_PANNEL_H
 
-#include "QUIConst.h"
+#include "../QUIConst.h"
 
 #include <QDialog>
 #include <QLabel>
