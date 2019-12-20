@@ -20,6 +20,7 @@
 #include "renderers/CenterAxisRenderer.h"
 #include "renderers/GridAxisRenderer.h"
 #include "renderers/ConvolutionRendererMask.h"
+#include "renderers/ConvolutionRendererFingerMask.h"
 
 #define M_PI 3.14159265358979323846
 #define GL_WINDOW_WIDTH 1600
@@ -62,9 +63,8 @@ public:
     inline void SetProjectPath(const std::string &project_path) { this->project_path_ = project_path; }
 
     void SaveScreenImg(const std::string &file_name);
-    void SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix);
     void SaveScreenImgMask(const std::string &file_name);
-    void SaveScreenImgMaskBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix);
+    void SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &batch_name, const std::string &file_suffix, const bool &is_mask = false);
 
     void SetRenderHandScreen();
     void ResetScreen();

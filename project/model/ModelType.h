@@ -182,6 +182,8 @@ struct Tangent {
 typedef std::vector<Sphere> Centers;
 typedef Eigen::Vector3i Block;
 typedef std::vector<Block> Blocks;
+typedef int BlockColor;
+typedef std::vector<BlockColor> BlockColors;
 typedef std::vector<Tangent> TangentPoints;
 
 typedef std::vector<Bone> Bones;

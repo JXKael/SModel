@@ -45,6 +45,7 @@ public:
     Bone GetBone(const std::string &name) const;
     Bone GetRootBone() const;
     inline const Blocks &GetBlocks() const { return model.blocks; }
+    inline const BlockColors &GetBlockColors() const { return model.block_colors; }
     inline const Dofs &GetDofs() const { return model.dofs; }
     Thetas GetInitThetas() { return model.GetInitThetas(); }
     inline const Thetas &GetThetas() const { return model.theta; }

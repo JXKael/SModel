@@ -16,6 +16,7 @@ Model::Model(const smodel::Model &model) {
     this->centers = model.centers;
     this->bones = model.bones;
     this->blocks = model.blocks;
+    this->block_colors = model.block_colors;
     this->tangent_points = model.tangent_points;
 
     // DOFs
@@ -31,6 +32,7 @@ void Model::Clear() {
     this->centers.clear();
     this->bones.clear();
     this->blocks.clear();
+    this->block_colors.clear();
     this->tangent_points.clear();
 
     this->dofs.clear();

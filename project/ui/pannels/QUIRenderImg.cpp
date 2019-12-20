@@ -40,27 +40,27 @@ void QUIRenderImg::Init() {
     file_suffix->setText(".png");
 
     // 设置屏幕为渲染手部
-    QPushButton *btn_render_hand = new QPushButton();
-    btn_render_hand->setText("Screen Hand");
-    btn_render_hand->setFocusPolicy(Qt::ClickFocus);
-    btn_render_hand->setFixedHeight(SINGLE_LINE_HEIGHT);
-    connect(btn_render_hand, SIGNAL(pressed()), this, SLOT(onClickBtnSetRenderHand()));
+    QPushButton *btn_norm = new QPushButton();
+    btn_norm->setText("Normlize Windown and View");
+    btn_norm->setFocusPolicy(Qt::ClickFocus);
+    btn_norm->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_norm, SIGNAL(pressed()), this, SLOT(onClickBtnNormScreen()));
     // 重置屏幕
-    QPushButton *btn_render_reset = new QPushButton();
-    btn_render_reset->setText("Screen Reset");
-    btn_render_reset->setFocusPolicy(Qt::ClickFocus);
-    btn_render_reset->setFixedHeight(SINGLE_LINE_HEIGHT);
-    connect(btn_render_reset, SIGNAL(pressed()), this, SLOT(onClickBtnRenderResetScreen()));
+    QPushButton *btn_norm_reset = new QPushButton();
+    btn_norm_reset->setText("Reset");
+    btn_norm_reset->setFocusPolicy(Qt::ClickFocus);
+    btn_norm_reset->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_norm_reset, SIGNAL(pressed()), this, SLOT(onClickBtnResetScreen()));
 
     // 单张渲染
     QPushButton *btn_render_one = new QPushButton();
-    btn_render_one->setText("Render One");
+    btn_render_one->setText("Render [RGB] One");
     btn_render_one->setFocusPolicy(Qt::ClickFocus);
     btn_render_one->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_render_one, SIGNAL(pressed()), this, SLOT(onClickBtnRenderOne()));
     // 批量渲染
     QPushButton *btn_render_batch = new QPushButton();
-    btn_render_batch->setText("Render Batch");
+    btn_render_batch->setText("Render [RGB] Batch");
     btn_render_batch->setFocusPolicy(Qt::ClickFocus);
     btn_render_batch->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_render_batch, SIGNAL(pressed()), this, SLOT(onClickBtnRenderBatch()));
@@ -78,9 +78,22 @@ void QUIRenderImg::Init() {
     btn_render_mask_batch->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_render_mask_batch, SIGNAL(pressed()), this, SLOT(onClickBtnRenderMaskBatch()));
 
+    // finger-mask 单张
+    QPushButton *btn_render_finger_mask_one = new QPushButton();
+    btn_render_finger_mask_one->setText("Render [Finger Mask] One");
+    btn_render_finger_mask_one->setFocusPolicy(Qt::ClickFocus);
+    btn_render_finger_mask_one->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_render_finger_mask_one, SIGNAL(pressed()), this, SLOT(onClickBtnRenderFingerMaskOne()));
+    // finger-mask 批量
+    QPushButton *btn_render_finger_mask_batch = new QPushButton();
+    btn_render_finger_mask_batch->setText("Render [Finger Mask] Batch");
+    btn_render_finger_mask_batch->setFocusPolicy(Qt::ClickFocus);
+    btn_render_finger_mask_batch->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_render_finger_mask_batch, SIGNAL(pressed()), this, SLOT(onClickBtnRenderFingerMaskBatch()));
+
     // one for all
     QPushButton *btn_one_for_all = new QPushButton();
-    btn_one_for_all->setText("One For All");
+    btn_one_for_all->setText("One For All [RGB]");
     btn_one_for_all->setFocusPolicy(Qt::ClickFocus);
     btn_one_for_all->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_one_for_all, SIGNAL(pressed()), this, SLOT(onClickBtnOneForAll()));
@@ -91,13 +104,19 @@ void QUIRenderImg::Init() {
     btn_one_for_all_mask->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_one_for_all_mask, SIGNAL(pressed()), this, SLOT(onClickBtnOneForAllMask()));
 
+    QPushButton *btn_one_for_all_finger_mask = new QPushButton();
+    btn_one_for_all_finger_mask->setText("One For All [Finger Mask]");
+    btn_one_for_all_finger_mask->setFocusPolicy(Qt::ClickFocus);
+    btn_one_for_all_finger_mask->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_one_for_all_finger_mask, SIGNAL(pressed()), this, SLOT(onClickBtnOneForAllFingerMask()));
+
 
     layout->addWidget(file_path, 0, 0, 1, 4);
     layout->addWidget(file_name, 0, 4, 1, 2);
     layout->addWidget(file_suffix, 0, 7, 1, 1);
 
-    layout->addWidget(btn_render_hand, 1, 0, 1, 2);
-    layout->addWidget(btn_render_reset, 1, 2, 1, 2);
+    layout->addWidget(btn_norm, 1, 0, 1, 3);
+    layout->addWidget(btn_norm_reset, 1, 3, 1, 1);
 
     layout->addWidget(btn_render_one, 2, 0, 1, 2);
     layout->addWidget(btn_render_batch, 2, 2, 1, 2);
@@ -105,8 +124,12 @@ void QUIRenderImg::Init() {
     layout->addWidget(btn_render_mask_one, 3, 0, 1, 2);
     layout->addWidget(btn_render_mask_batch, 3, 2, 1, 2);
 
-    layout->addWidget(btn_one_for_all, 4, 0, 1, 2);
-    layout->addWidget(btn_one_for_all_mask, 4, 2, 1, 2);
+    layout->addWidget(btn_render_finger_mask_one, 4, 0, 1, 2);
+    layout->addWidget(btn_render_finger_mask_batch, 4, 2, 1, 2);
+
+    layout->addWidget(btn_one_for_all, 5, 0, 1, 2);
+    layout->addWidget(btn_one_for_all_mask, 5, 2, 1, 2);
+    layout->addWidget(btn_one_for_all_finger_mask, 6, 0, 1, 2);
 
     // 总的弹板设置
     this->setLayout(layout);
@@ -124,11 +147,11 @@ void QUIRenderImg::UpdateGL() {
     QUIManager::Instance().UpdateGL();
 }
 
-void QUIRenderImg::onClickBtnSetRenderHand() {
+void QUIRenderImg::onClickBtnNormScreen() {
     gl_window_->SetRenderHandScreen();
 }
 
-void QUIRenderImg::onClickBtnRenderResetScreen() {
+void QUIRenderImg::onClickBtnResetScreen() {
     gl_window_->ResetScreen();
 }
 
@@ -145,7 +168,7 @@ void QUIRenderImg::onClickBtnRenderOne() {
 
 void QUIRenderImg::onClickBtnRenderBatch() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "jpg");
+        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "RGB", "png");
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -165,12 +188,32 @@ void QUIRenderImg::onClickBtnRenderMaskOne() {
 
 void QUIRenderImg::onClickBtnRenderMaskBatch() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        gl_window_->SaveScreenImgMaskBatch(file_path->text().toStdString(), file_name->text().toStdString(), "png");
+        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "mask", "png", true);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
     }
 }
+
+void QUIRenderImg::onClickBtnRenderFingerMaskOne() {
+    if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
+        const std::string file = (file_path->text() + file_name->text() + "-finger-mask.png").toStdString();
+        gl_window_->SaveScreenImgMask(file);
+    }
+    else {
+        QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
+    }
+}
+
+void QUIRenderImg::onClickBtnRenderFingerMaskBatch() {
+    if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
+        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "finger-mask", "png", true);
+    }
+    else {
+        QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
+    }
+}
+
 
 
 void QUIRenderImg::onClickBtnOneForAll() {
@@ -228,7 +271,6 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
                                           "ZH", "CH", "SH", "NG" };
     QUIQuick *ui_quick = QUIManager::Instance().GetUIQuick();
     if (nullptr != ui_quick) {
-        
         for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
             const std::string &model_name = it->first;
             smodel::ModelCtrl *model_ctrl = it->second;
@@ -255,6 +297,7 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
                     if (theta_pair.first == pose_name && mask_pair.first == pose_name) {
                         std::cout << "--> [" << model_name << "]'s pose: " << pose_name << " was found" << std::endl;
                         this->UpdateModel(model_name, theta_pair.second);
+                        // special
                         gl_window_->SetMaskVal(model_name, mask_pair.second);
                         failure = false;
                         break;
@@ -268,6 +311,60 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
                 file_name->setText(pose_name.c_str());
                 this->UpdateGL();
                 this->onClickBtnRenderMaskBatch();
+            }
+            else {
+                std::cout << "--> Render process passed!!!" << std::endl;
+            }
+        }
+    }
+}
+
+void QUIRenderImg::onClickBtnOneForAllFingerMask() {
+    std::vector<std::string> all_pose = { "A", "B", "C", "D", "E", "F", "G",
+                                          "H", "I", "J", "K", "L", "M", "N",
+                                          "O", "P", "Q",      "R", "S", "T",
+                                          "U", "V", "W",      "X", "Y", "Z",
+                                          "ZH", "CH", "SH", "NG" };
+    QUIQuick *ui_quick = QUIManager::Instance().GetUIQuick();
+    if (nullptr != ui_quick) {
+        for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+            const std::string &model_name = it->first;
+            smodel::ModelCtrl *model_ctrl = it->second;
+            loadQuickThetas(project_path_, model_name, model_ctrl);
+            if (pose_thetas_map[model_name].size() < all_pose.size()) {
+                std::cout << "模型" << model_name << "快捷参数有问题" << std::endl;
+                return;
+            }
+            if (pose_mask_map[model_name].size() < all_pose.size()) {
+                std::cout << "模型" << model_name << "mask有问题" << std::endl;
+                return;
+            }
+        }
+        for (const std::string &pose_name : all_pose) {
+            std::cout << "--> About to render [" << std::setw(2) << pose_name << "] ----------------------------------------------" << std::endl;
+            bool failure = true;
+            for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+                const std::string &model_name = it->first;
+                quick_thetas_list &quick_thetas = pose_thetas_map[model_name];
+                quick_mask_list &quick_mask = pose_mask_map[model_name];
+                for (int i = 0; i < quick_thetas.size(); ++i) {
+                    const quick_theta_pair &theta_pair = quick_thetas[i];
+                    const quick_mask_pair &mask_pair = quick_mask[i];
+                    if (theta_pair.first == pose_name && mask_pair.first == pose_name) {
+                        std::cout << "--> [" << model_name << "]'s pose: " << pose_name << " was found" << std::endl;
+                        this->UpdateModel(model_name, theta_pair.second);
+                        failure = false;
+                        break;
+                    }
+                }
+                if (failure) {
+                    std::cout << "!!! Warning " << "[" << model_name << "]'s pose: " << pose_name << " was not found" << std::endl;
+                }
+            }
+            if (!failure) {
+                file_name->setText(pose_name.c_str());
+                this->UpdateGL();
+                this->onClickBtnRenderFingerMaskBatch();
             }
             else {
                 std::cout << "--> Render process passed!!!" << std::endl;

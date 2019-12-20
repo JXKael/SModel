@@ -50,6 +50,13 @@ void GLWindow::SetupRenderers(models_map &models) {
         renderers_state[idx] = false;
         ++idx;
     }
+    // finger_mask渲染
+    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+        renderers[idx] = std::make_shared<ui::ConvolutionRendererFingerMask>(project_path_, it->second);
+        renderers[idx]->SetName(it->second->GetName() + "_finger_mask");
+        renderers_state[idx] = false;
+        ++idx;
+    }
 
     // center轴渲染
     renderers[idx] = std::make_shared<ui::CenterAxisRenderer>(project_path_.c_str(), models);
@@ -117,62 +124,39 @@ void GLWindow::SaveScreenImg(const std::string &file_name) {
     cv::imwrite(file_name, rgba_image);
 }
 
-void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix) {
-    smodel::ModelCtrl *body_model = QUIManager::Instance().GetModel(BODY);
-    if (nullptr != body_model) {
-        float yaw = 0.0f;   // 0~360
-        float pitch = 0.0f; // -89~89
-
-        const std::string flle_folder = file_path + file_name + "-RGB/";
-        _mkdir(flle_folder.c_str());
-        int idx = 1;
-        float yaw_stride = 360.0f / 32.0f;
-        float pitch_stride = 178.0f / 32.0f;
-        std::cout << "--> Starting rendering image batch:" << std::endl;
-        for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
-            for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
-                camera.SetEulerAngles(yaw, pitch);
-                camera.UpdateFocusCameraVectors();
-                this->update();
-                const std::string file_name_c = QString("%1-%2.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
-                std::cout << "\r... Rendering........[" << file_name_c << "]";
-
-                SaveScreenImg(flle_folder + file_name_c);
-            }
-        }
-        std::cout << "\r--> Rendering over !                              " << std::endl;
-    }
-}
-
 void GLWindow::SaveScreenImgMask(const std::string &file_name) {
     cv::Mat rgba_image = QImage2cvMat(grabFramebuffer());
     cv::imwrite(file_name, convertToMaskImg(rgba_image));
 }
 
-void GLWindow::SaveScreenImgMaskBatch(const std::string &file_path, const std::string &file_name, const std::string &file_suffix) {
+void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &batch_name, const std::string &file_suffix, const bool &is_mask) {
     smodel::ModelCtrl *body_model = QUIManager::Instance().GetModel(BODY);
     if (nullptr != body_model) {
         float yaw = 0.0f;   // 0~360
         float pitch = 0.0f; // -89~89
 
-        const std::string flle_folder = file_path + file_name + "-Mask/";
+        const std::string flle_folder = file_path + file_name + "-" + batch_name + "/";
         _mkdir(flle_folder.c_str());
         int idx = 1;
         float yaw_stride = 360.0f / 32.0f;
         float pitch_stride = 178.0f / 32.0f;
-        std::cout << "--> Starting rendering image mask batch:" << std::endl;
+        std::cout << "--> Starting rendering [" << batch_name << "] batch of " << file_name << ":" << std::endl;
         for (float yaw = 0.0f; yaw <= 360.0f; yaw += yaw_stride) {
             for (float pitch = 89.0f; pitch >= -89.0f; pitch -= pitch_stride) {
                 camera.SetEulerAngles(yaw, pitch);
                 camera.UpdateFocusCameraVectors();
                 this->update();
-                const std::string file_name_c = QString("%1-%2-mask.%3").arg(file_name.c_str()).arg(idx++).arg(file_suffix.c_str()).toStdString();
-                std::cout << "\r... Rendering........[" << file_name_c << "]";
+                const std::string file_name_c = QString("%1-%2-%3.%4").arg(file_name.c_str()).arg(idx++).arg(batch_name.c_str()).arg(file_suffix.c_str()).toStdString();
+                std::cout << "\r... Rendering........" << file_name_c;
 
-                this->SaveScreenImgMask(flle_folder + file_name_c);
+                if (is_mask) {
+                    this->SaveScreenImgMask(flle_folder + file_name_c);
+                } else {
+                    this->SaveScreenImg(flle_folder + file_name_c);
+                }
             }
         }
-        std::cout << "\r--> Rendering over !                              " << std::endl;
+        std::cout << "\r--> Rendering over !                                                       " << std::endl;
     }
 }
 
@@ -288,9 +272,9 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_3:
         QUIManager::Instance().ShowLeftHandPannel();
         break;
-    //case Qt::Key_4:
-    //    this->ProcessImage();
-    //    break;
+    case Qt::Key_4:
+        this->ProcessImage();
+        break;
     case Qt::Key_Up:
         camera.ProcessMovement(kUDLR, glm::vec2(0, 100));
         break;
@@ -307,31 +291,61 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
 // other function
 
 void GLWindow::ProcessImage() {
-    const std::string path = "E:/Code/GitHub/SModel/project/data/images/A-RGB/";
-    const std::string dst_path = "E:/Code/GitHub/SModel/project/data/images/Masks/";
+    const std::string path = "E:/Datasets/SignData_30/Arranged/B-Mask/";
+    const std::string dst_path = "E:/Datasets/SignData_30/Arranged/B-Mask/";
     std::vector<std::string> all_files = listFiles(path.c_str());
     int idx = 0;
     for (const std::string &file_name : all_files) {
-        std::cout << "Porcessing No." << idx << ": " << file_name << std::endl;
-        cv::Mat rgb_image = cv::imread(path + file_name);
-        int rows = rgb_image.rows;
-        int cols = rgb_image.cols;
-        cv::Mat mask_img(rows, cols, CV_8UC1);
-        for (int j = 0; j < rows; ++j) {
-            // uchar* outData = outImage.ptr<uchar>(k);
-            for (int i = 0; i < cols ; ++i)
-            {
-                const cv::Vec3b &pixel = rgb_image.at<cv::Vec3b>(j, i);
-                if (pixel[0] >= 245 && pixel[1] >= 245 && pixel[2] >= 245) {
-                    mask_img.at<uchar>(j, i) = 0;
-                }
-                else {
-                    mask_img.at<uchar>(j, i) = 4;
+        std::cout << "Porcessing: " << file_name << std::endl;
+        cv::Mat image = cv::imread(path + file_name);
+        int rows = image.rows;
+        int cols = image.cols;
+        cv::Mat dst_image(rows, cols, CV_8UC1);
+        for (int k = 0; k < 32; ++k) {
+            for (int j = 1; j < rows - 1; ++j) {
+                // uchar* outData = outImage.ptr<uchar>(k);
+                for (int i = 1; i < cols - 1 ; ++i)
+                {
+                    cv::Vec3b &pixel = image.at<cv::Vec3b>(j, i);
+                    const cv::Vec3b &pixel_up = image.at<cv::Vec3b>(j - 1, i);
+                    const cv::Vec3b &pixel_down = image.at<cv::Vec3b>(j + 1, i);
+                    const cv::Vec3b &pixel_left = image.at<cv::Vec3b>(j, i - 1);
+                    const cv::Vec3b &pixel_right = image.at<cv::Vec3b>(j, i + 1);
+                    int white_num = 0, black_num = 0;
+                    if (pixel_up[0] == 255)
+                        white_num++;
+                    else if (pixel_up[0] == 0)
+                        black_num++;
+                    if (pixel_down[0] == 255)
+                        white_num++;
+                    else if (pixel_down[0] == 0)
+                        black_num++;
+                    if (pixel_left[0] == 255)
+                        white_num++;
+                    else if (pixel_left[0] == 0)
+                        black_num++;
+                    if (pixel_right[0] == 255)
+                        white_num++;
+                    else if (pixel_right[0] == 0)
+                        black_num++;
+
+                    if (white_num >= 3 && pixel[0] == 0) {
+                        pixel[0] = 255;
+                        pixel[1] = 255;
+                        pixel[2] = 255;
+                    }
+                    else if (black_num >= 3 && pixel[0] == 255) {
+                        pixel[0] = 0;
+                        pixel[1] = 0;
+                        pixel[2] = 0;
+                    }
+
+                    dst_image.at<uchar>(j, i) = pixel[0];
                 }
             }
         }
-        std::string out_name = file_name.substr(0, file_name.find_last_of(".")) + ".png";
-        cv::imwrite(dst_path + out_name, mask_img);
+        std::string out_name = file_name;
+        cv::imwrite(dst_path + out_name, dst_image);
         ++idx;
     }
 }
@@ -377,7 +391,7 @@ std::vector<std::string> listFiles(const char *dir) {
 cv::Mat QImage2cvMat(QImage &image, bool clone, bool rb_swap)
 {
     cv::Mat mat;
-    qDebug() << image.format();
+    //qDebug() << image.format();
     switch (image.format())
     {
     case QImage::Format_ARGB32:

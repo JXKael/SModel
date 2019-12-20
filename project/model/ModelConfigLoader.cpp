@@ -86,6 +86,23 @@ Blocks ModelConfigLoader::LoadBlocks(const std::string &path) {
     return blocks;
 }
 
+BlockColors ModelConfigLoader::LoadBlockColors(const std::string &path) {
+    BlockColors block_colors;
+    try {
+        io::CSVReader<1> centers_csv(path);
+        centers_csv.read_header(io::ignore_extra_column, "mask_color");
+        int color;
+        while (centers_csv.read_row(color)) {
+            block_colors.push_back(BlockColor(color));
+        }
+    }
+    catch (io::error::can_not_open_file err) {
+        std::cout << "!!!无法打开文件: " << err.what() << std::endl;
+    }
+
+    return block_colors;
+}
+
 smodel::vec3 ModelConfigLoader::convertToVec3(const std::string &str) {
     smodel::vec3 res = smodel::vec3::Zero();
     if (str.size() > 0) {

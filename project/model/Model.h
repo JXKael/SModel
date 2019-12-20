@@ -21,6 +21,7 @@ public:
     Centers centers;
     Bones bones;
     Blocks blocks;
+    BlockColors block_colors;
     TangentPoints tangent_points;
 
     // DOFs

@@ -42,6 +42,7 @@ void ModelCtrl::Init() {
     model.centers = config_loader->LoadCenters(project_path_ + "/data/" + name_ + "/centers.csv");
     model.bones = config_loader->LoadBones(project_path_ + "/data/" + name_ + "/bones.csv");
     model.blocks = config_loader->LoadBlocks(project_path_ + "/data/" + name_ + "/blocks.csv");
+    model.block_colors = config_loader->LoadBlockColors(project_path_ + "/data/" + name_ + "/blocks.csv");
     model.dofs = config_loader->LoadDofs(project_path_ + "/data/" + name_ + "/dofs.csv");
 
     semantics->Init();

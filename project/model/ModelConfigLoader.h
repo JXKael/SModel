@@ -17,6 +17,7 @@ public:
     Bones LoadBones(const std::string &path);
     Dofs LoadDofs(const std::string &path);
     Blocks LoadBlocks(const std::string &path);
+    BlockColors ModelConfigLoader::LoadBlockColors(const std::string &path);
 
 private:
     smodel::vec3 convertToVec3(const std::string &str);

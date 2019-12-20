@@ -49,8 +49,8 @@ private:
     void loadQuickThetas(const std::string &project_path, const std::string &model_name, smodel::ModelCtrl *model_ctrl);
 
 private Q_SLOTS:
-    void onClickBtnSetRenderHand();
-    void onClickBtnRenderResetScreen();
+    void onClickBtnNormScreen();
+    void onClickBtnResetScreen();
 
     void onClickBtnRenderOne();
     void onClickBtnRenderBatch();
@@ -58,8 +58,12 @@ private Q_SLOTS:
     void onClickBtnRenderMaskOne();
     void onClickBtnRenderMaskBatch();
 
+    void onClickBtnRenderFingerMaskOne();
+    void onClickBtnRenderFingerMaskBatch();
+
     void onClickBtnOneForAll();
     void onClickBtnOneForAllMask();
+    void onClickBtnOneForAllFingerMask();
 };
 // class QUIRenderImg
 
