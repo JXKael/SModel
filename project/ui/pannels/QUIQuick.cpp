@@ -69,7 +69,7 @@ QVBoxLayout *QUIQuick::InitCheckBoxes() {
         QString btn_text = sel_model_name == name ? QString("%1 >>").arg(name.c_str()) : QString("%1").arg(name.c_str());
         btn->setText(btn_text);
         btn->setFocusPolicy(Qt::NoFocus);
-        btn->setFixedWidth(120);
+        btn->setFixedWidth(180);
         btn->setFixedHeight(SINGLE_LINE_HEIGHT);
 
         connect(btn, SIGNAL(pressed()), checkbox_btn_mapper, SLOT(map()));
@@ -88,7 +88,7 @@ QVBoxLayout *QUIQuick::InitCheckBoxes() {
         // 标签
         QCheckBox *check_box = new QCheckBox(name.c_str());
         check_box->setCheckState(renderers_state_[id] ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
-        check_box->setFixedWidth(120);
+        check_box->setFixedWidth(180);
         check_box->setFixedHeight(SINGLE_LINE_HEIGHT);
 
         connect(check_box, SIGNAL(toggled(bool)), checkbox_mapper, SLOT(map()));

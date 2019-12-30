@@ -24,7 +24,7 @@ void ConvolutionRenderer::SpecialInit() {
          1.0f,  1.0f, 0.0f,    1.0f, 1.0f
     };
     
-    this->vertex_shader_ = QString((project_path_+ "/ui/shaders/model_vs.glsl").c_str());
+    this->vertex_shader_ = QString((project_path_ + "/ui/shaders/model_vs.glsl").c_str());
     this->frag_shader_ = QString((project_path_ + "/ui/shaders/model_fs.glsl").c_str());
 
     this->SetClearColor(1.0f, 1.0f, 1.0f, 1.0f);

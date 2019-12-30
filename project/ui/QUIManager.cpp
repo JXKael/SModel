@@ -10,6 +10,7 @@ QUIManager::QUIManager() {
     ui_left_hand = nullptr;
     ui_anim = nullptr;
     ui_render_img = nullptr;
+    ui_point_cloud = nullptr;
 }
 
 QUIManager::~QUIManager() {}
@@ -155,6 +156,26 @@ void QUIManager::ShowRenderImgPannel() {
         bool isVisible = ui_render_img->isVisible();
         if (!isVisible) {
             ui_render_img->show();
+        }
+    }
+}
+
+void QUIManager::ShowPointCloudWindow(const std::string &file_path) {
+    if (nullptr == ui_point_cloud) {
+        ui_point_cloud = new QUIPointCloud(project_path_);
+    }
+    if (nullptr != ui_point_cloud) {
+        bool isVisible = ui_point_cloud->isVisible();
+        if (!isVisible) {
+            ui_point_cloud->SetDepthImgPath(file_path);
+            ui_point_cloud->Init();
+            if (ui_point_cloud->IsReadSuccess()) {
+                ui_point_cloud->show();
+            }
+            else {
+                // QMessageBox::warning(this, tr("Error"), tr("Failed reading depth file!"), QMessageBox::Yes);
+                std::cout << "请填写正确的深度图文件" << std::endl;
+            }
         }
     }
 }

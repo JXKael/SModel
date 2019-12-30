@@ -25,11 +25,16 @@ GLRenderer::GLRenderer(const QString &vertex_shader, const QString &frag_shader)
 GLRenderer::~GLRenderer() {
     this->ClearVertices();
     this->ClearTextures();
-    shader_program.release();
-    vbo.release();
-    vbo.destroy();
-    vao.release();
-    vao.destroy();
+    if (shader_program.isLinked())
+        shader_program.release();
+    if (vbo.isCreated()) {
+        vbo.release();
+        vbo.destroy();
+    }
+    if (vao.isCreated()) {
+        vao.release();
+        vao.destroy();
+    }
 }
 
 void GLRenderer::InitializeGL() {

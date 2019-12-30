@@ -7,6 +7,7 @@
 #include "pannels/QUIDashboard.h"
 #include "pannels/QUIQuick.h"
 #include "pannels/QUIRenderImg.h"
+#include "pannels/QUIPointCloud.h"
 
 namespace ui {
 
@@ -19,6 +20,7 @@ private:
     QUIDashboard *ui_left_hand;
     QUIAnim *ui_anim;
     QUIRenderImg *ui_render_img;
+    QUIPointCloud *ui_point_cloud;
 
     std::string name;
     int center_id;
@@ -54,6 +56,7 @@ public:
     void ShowLeftHandPannel();
     void ShowAnimPannel();
     void ShowRenderImgPannel();
+    void ShowPointCloudWindow(const std::string &file_path);
     void SetSelected(const std::string &name, const int &center_id);
     const std::string &GetSelectedModel() const;
     const int &GetSelectedCenterId() const;
