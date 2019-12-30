@@ -68,7 +68,6 @@ public:
 
     void SetRenderHandScreen();
     void ResetScreen();
-    void SetMaskVal(const std::string &model_name, const int &mask_val);
 
 protected:
     void initializeGL() override;

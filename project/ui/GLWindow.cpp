@@ -180,17 +180,6 @@ void GLWindow::ResetScreen() {
     this->update();
 }
 
-void GLWindow::SetMaskVal(const std::string &model_name, const int &mask_val) {
-    for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
-        if (it->second->GetName() == (model_name + "_mask")) {
-            ConvolutionRendererMask *p = (ConvolutionRendererMask *)(it->second.get());
-            p->SetMaskVal(mask_val);
-            break;
-        }
-    }
-}
-
-
 // event
 
 void GLWindow::mousePressEvent(QMouseEvent *event) {

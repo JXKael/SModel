@@ -22,6 +22,8 @@ private:
 
     int selected_centerid;
 
+    int mask_val_;
+
 public:
     // constructor & destructor
     explicit ModelCtrl();
@@ -59,6 +61,9 @@ public:
     inline const std::string &GetName() const { return this->name_; }
 
     inline const bool HasParent() const { return model.has_parent; }
+
+    void SetMaskValue(const int &mask_val);
+    const int GetMaskValue() const;
 private:
     void MoveChildren();
     void UpdateChildren();

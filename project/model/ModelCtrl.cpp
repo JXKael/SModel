@@ -2,21 +2,21 @@
 
 using namespace smodel;
 
-ModelCtrl::ModelCtrl() : name_("model"), project_path_("") {
+ModelCtrl::ModelCtrl() : name_("model"), project_path_(""), mask_val_(0) {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
     selected_centerid = -1;
 }
 
-ModelCtrl::ModelCtrl(const std::string &project_path): name_("model"), project_path_(project_path) {
+ModelCtrl::ModelCtrl(const std::string &project_path): name_("model"), project_path_(project_path), mask_val_(0) {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
     selected_centerid = -1;
 }
 
-ModelCtrl::ModelCtrl(const std::string &name, const std::string &project_path) : name_(name), project_path_(project_path) {
+ModelCtrl::ModelCtrl(const std::string &name, const std::string &project_path) : name_(name), project_path_(project_path), mask_val_(0) {
     config_loader = new ModelConfigLoader();
     semantics = new ModelSemantics(model);
     parent_bone_id_ = -1;
@@ -115,4 +115,12 @@ void ModelCtrl::AddChild(ModelCtrl &child, const int to_boneid) {
         child.Move(parent_bone);
         child.Update();
     }
+}
+
+void ModelCtrl::SetMaskValue(const int &mask_val) {
+    this->mask_val_ = mask_val;
+}
+
+const int ModelCtrl::GetMaskValue() const {
+    return this->mask_val_;
 }

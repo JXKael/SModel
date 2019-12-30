@@ -6,19 +6,14 @@ ConvolutionRendererMask::ConvolutionRendererMask() : GLRenderer() {
     SpecialInit();
 }
 
-ConvolutionRendererMask::ConvolutionRendererMask(const std::string project_path, const smodel::ModelCtrl *model, const int mask_val)
+ConvolutionRendererMask::ConvolutionRendererMask(const std::string project_path, const smodel::ModelCtrl *model)
   : project_path_(project_path),
-    model_(model),
-    mask_val_(mask_val)
+    model_(model)
 {
     SpecialInit();
 }
 
 ConvolutionRendererMask::~ConvolutionRendererMask() {}
-
-void ConvolutionRendererMask::SetMaskVal(const int &mask_val) {
-    this->mask_val_ = mask_val;
-}
 
 void ConvolutionRendererMask::SpecialInit() {
     std::vector<float> convolution_vertices = {
@@ -82,7 +77,8 @@ void ConvolutionRendererMask::PassOtherToShader() {
         PassWindowToShader();
         PassRenderModelToShader();
 
-        shader_program.setUniformValue("mask_color", (GLfloat)((float)mask_val_ / 255.0f));
+        int mask_val = model_->GetMaskValue();
+        shader_program.setUniformValue("mask_color", (GLfloat)((float)mask_val / 255.0f));
     }
 }
 

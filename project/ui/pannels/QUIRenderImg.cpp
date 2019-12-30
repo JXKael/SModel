@@ -298,7 +298,7 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
                         std::cout << "--> [" << model_name << "]'s pose: " << pose_name << " was found" << std::endl;
                         this->UpdateModel(model_name, theta_pair.second);
                         // special
-                        gl_window_->SetMaskVal(model_name, mask_pair.second);
+                        models_[model_name]->SetMaskValue(mask_pair.second);
                         failure = false;
                         break;
                     }

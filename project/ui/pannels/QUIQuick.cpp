@@ -306,7 +306,7 @@ void QUIQuick::onQuickBtnClick(int id) {
     if (it != models_.end()) {
         model_pose[sel_model_name] = quick_thetas[id].first;
         const smodel::Thetas &thetas = quick_thetas[id].second;
-        QUIManager::Instance().GetGLWindow()->SetMaskVal(sel_model_name, pose_mask_map[sel_model_name][quick_thetas[id].first]);
+        models_[sel_model_name]->SetMaskValue(pose_mask_map[sel_model_name][quick_thetas[id].first]);
         ApplyModelAs(sel_model_name, thetas);
     }
 }

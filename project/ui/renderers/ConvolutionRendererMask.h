@@ -31,12 +31,10 @@ private:
     GLint window_width = 0;
     GLint window_height = 0;
 
-    int mask_val_;
 public:
     ConvolutionRendererMask();
-    ConvolutionRendererMask(const std::string project_path, const smodel::ModelCtrl *model, const int mask_val = 0);
+    ConvolutionRendererMask(const std::string project_path, const smodel::ModelCtrl *model);
     ~ConvolutionRendererMask();
-    void SetMaskVal(const int &mask_val);
     void ResizeGL(int w, int h) override;
 
     void Draw() override;
