@@ -378,8 +378,8 @@ void QUIRenderImg::loadQuickThetas(const std::string &project_path, const std::s
 
     if (nullptr != model_ctrl) {
         try {
-            io::CSVReader<3> centers_csv(project_path + "/data/" + model_name + "/thetas.csv");
-            centers_csv.read_header(io::ignore_extra_column, "id", "thetas", "mask");
+            csv::CSVReader<3> centers_csv(project_path + "/data/" + model_name + "/thetas.csv");
+            centers_csv.read_header(csv::ignore_extra_column, "id", "thetas", "mask");
             std::string id, thetas_s;
             int mask;
             int idx = 0;
@@ -394,7 +394,7 @@ void QUIRenderImg::loadQuickThetas(const std::string &project_path, const std::s
                 pose_mask_map[model_name].push_back(quick_mask_pair(theta_name, mask));
             }
         }
-        catch (io::error::can_not_open_file err) {
+        catch (csv::error::can_not_open_file err) {
             std::cout << err.what() << std::endl;
         }
         catch (unsigned int line) {

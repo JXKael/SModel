@@ -1,5 +1,6 @@
 ﻿#include "GLWindow.h"
 #include "QUIManager.h"
+#include "utils/dir_utils.h"
 
 #include <iostream>
 #include <iomanip>
@@ -13,7 +14,6 @@
 
 using namespace ui;
 
-std::vector<std::string> listFiles(const char *dir);
 cv::Mat QImage2cvMat(QImage &image, bool clone = true, bool rb_swap = false);
 cv::Mat convertToMaskImg(cv::Mat &rgba_img);
 
@@ -275,9 +275,9 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_4:
         this->ProcessImage();
         break;
-    case Qt::Key_Up:
-        camera.ProcessMovement(kUDLR, glm::vec2(0, 100));
-        break;
+    //case Qt::Key_Up:
+    //    camera.ProcessMovement(kUDLR, glm::vec2(0, 100));
+    //    break;
     case Qt::Key_9:
         QUIManager::Instance().ShowAnimPannel();
         break;
@@ -290,102 +290,90 @@ void GLWindow::keyPressEvent(QKeyEvent *event) {
 
 // other function
 
-void GLWindow::ProcessImage() {
-    const std::string path = "E:/Datasets/SignData_30/Arranged/B-Mask/";
-    const std::string dst_path = "E:/Datasets/SignData_30/Arranged/B-Mask/";
-    std::vector<std::string> all_files = listFiles(path.c_str());
-    int idx = 0;
-    for (const std::string &file_name : all_files) {
-        std::cout << "Porcessing: " << file_name << std::endl;
-        cv::Mat image = cv::imread(path + file_name);
-        int rows = image.rows;
-        int cols = image.cols;
-        cv::Mat dst_image(rows, cols, CV_8UC1);
-        for (int k = 0; k < 32; ++k) {
-            for (int j = 1; j < rows - 1; ++j) {
-                // uchar* outData = outImage.ptr<uchar>(k);
-                for (int i = 1; i < cols - 1 ; ++i)
-                {
-                    cv::Vec3b &pixel = image.at<cv::Vec3b>(j, i);
-                    const cv::Vec3b &pixel_up = image.at<cv::Vec3b>(j - 1, i);
-                    const cv::Vec3b &pixel_down = image.at<cv::Vec3b>(j + 1, i);
-                    const cv::Vec3b &pixel_left = image.at<cv::Vec3b>(j, i - 1);
-                    const cv::Vec3b &pixel_right = image.at<cv::Vec3b>(j, i + 1);
-                    int white_num = 0, black_num = 0;
-                    if (pixel_up[0] == 255)
-                        white_num++;
-                    else if (pixel_up[0] == 0)
-                        black_num++;
-                    if (pixel_down[0] == 255)
-                        white_num++;
-                    else if (pixel_down[0] == 0)
-                        black_num++;
-                    if (pixel_left[0] == 255)
-                        white_num++;
-                    else if (pixel_left[0] == 0)
-                        black_num++;
-                    if (pixel_right[0] == 255)
-                        white_num++;
-                    else if (pixel_right[0] == 0)
-                        black_num++;
-
-                    if (white_num >= 3 && pixel[0] == 0) {
-                        pixel[0] = 255;
-                        pixel[1] = 255;
-                        pixel[2] = 255;
-                    }
-                    else if (black_num >= 3 && pixel[0] == 255) {
-                        pixel[0] = 0;
-                        pixel[1] = 0;
-                        pixel[2] = 0;
-                    }
-
-                    dst_image.at<uchar>(j, i) = pixel[0];
-                }
-            }
+cv::Mat get_kernel(int kern_size, int white_val, unsigned int &th_b, unsigned int &th_t) {
+    cv::Mat kernel(kern_size, kern_size, CV_8UC1);
+    unsigned int th_bottom = 0;
+    unsigned int th_top = 0;
+    int i = 1;
+    for (int k_row = 1; k_row < kern_size - 1; ++k_row) {
+        for (int k_col = 1; k_col < kern_size - 1; ++k_col) {
+            th_top += (1 * white_val);
+            kernel.at<cv::uint8_t>(k_row, k_col) = 1;
+            i++;
         }
-        std::string out_name = file_name;
-        cv::imwrite(dst_path + out_name, dst_image);
-        ++idx;
     }
+    for (int k_col = 0; k_col < kern_size - 1; ++k_col) {
+        th_bottom += (i * white_val);
+        kernel.at<cv::uint8_t>(0, k_col) = i++;
+    }
+    for (int k_row = 0; k_row < kern_size - 1; ++k_row) {
+        th_bottom += (i * white_val);
+        kernel.at<cv::uint8_t>(k_row, kern_size - 1) = i++;
+    }
+    for (int k_col = kern_size - 1; k_col > 0; --k_col) {
+        th_bottom += (i * white_val);
+        kernel.at<cv::uint8_t>(kern_size - 1, k_col) = i++;
+    }
+    for (int k_row = kern_size - 1; k_row > 0; --k_row) {
+        th_bottom += (i * white_val);
+        kernel.at<cv::uint8_t>(k_row, 0) = i++;
+    }
+    th_top += th_bottom;
+    //for (int k_row = 0; k_row < kern_size; ++k_row) {
+    //    for (int k_col = 0; k_col < kern_size; ++k_col) {
+    //        int val = (int)kernel.at<cv::uint8_t>(k_row, k_col);
+    //        std::cout << std::setw(2) << val << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
+    th_b = th_bottom;
+    th_t = th_top;
+    return kernel;
 }
 
-std::vector<std::string> listFiles(const char *dir) {
-    std::vector<std::string> names;
-    char dirNew[200];
-    strcpy(dirNew, dir);
-    strcat(dirNew, "\\*.*");    // 在目录后面加上"\\*.*"进行第一次搜索
-
-    intptr_t handle;
-    _finddata_t findData;
-
-    handle = _findfirst(dirNew, &findData);
-    if (handle == -1)        // 检查是否成功
-        return names;
-
-    do
-    {
-        if (findData.attrib & _A_SUBDIR) {
-            if (strcmp(findData.name, ".") == 0 || strcmp(findData.name, "..") == 0)
-                continue;
-
-            std::cout << findData.name << "\t<dir>\n";
-
-            // 在目录后面加上"\\"和搜索到的目录名进行下一次搜索
-            strcpy(dirNew, dir);
-            strcat(dirNew, "\\");
-            strcat(dirNew, findData.name);
-
-            listFiles(dirNew);
+int get_seg_line(cv::Mat &image_l) {
+    int rows = image_l.rows;
+    int cols = image_l.cols;
+    int seg = ceil(6.5f / 10.0f * (float)rows);
+    for (int col = seg; col > 0; --col) {
+        bool q = true;
+        for (int row = 0; row < rows; ++row) {
+            const cv::uint8_t &pixel = image_l.at<cv::uint8_t>(row, col);
+            if (pixel > 0) {
+                q = false;
+                break;
+            }
         }
-        else {
-            names.push_back(findData.name);
-            // std::cout << findData.name << "\t" << findData.size << " bytes.\n";
+        if (q) {
+            seg = col;
+            break;
         }
-    } while (_findnext(handle, &findData) == 0);
+    }
+    return seg;
+}
 
-    _findclose(handle);    // 关闭搜索句柄
-    return names;
+void GLWindow::ProcessImage() {
+    std::string depth_img_src = "E:/Datasets/SignData_30/Original/output_A/depth_0.png";
+    std::string color_img_src = "E:/Datasets/SignData_30/Original/output_A/color_0.png";
+    std::string dst_img_path = color_img_src.substr(0, 42) + "color_0_ppp.png";
+    cv::Mat depth_img = cv::imread(depth_img_src, -1);
+    cv::Mat color_img = cv::imread(color_img_src, -1);
+    int rows = depth_img.rows;
+    int cols = depth_img.cols;
+    cv::uint16_t min = 1 << 15;
+    cv::uint16_t max = 0;
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            cv::uint16_t &pixel = depth_img.at<cv::uint16_t>(row, col);
+            if (pixel > 500) {
+                cv::Vec3b &color_pixel = color_img.at<cv::Vec3b>(row, col);
+                color_pixel[0] = 255;
+                color_pixel[1] = 255;
+                color_pixel[2] = 255;
+            }
+        }
+    }
+    cv::imwrite(dst_img_path, color_img);
 }
 
 cv::Mat QImage2cvMat(QImage &image, bool clone, bool rb_swap)

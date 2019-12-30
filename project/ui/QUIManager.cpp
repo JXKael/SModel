@@ -133,7 +133,7 @@ void QUIManager::ShowLeftHandPannel() {
 
 void QUIManager::ShowAnimPannel() {
     if (nullptr == ui_anim) {
-        ui_anim = new QUIAnim(models);
+        ui_anim = new QUIAnim(project_path_, models);
         ui_anim->setParent(gl_window, Qt::WindowType::Dialog);
         ui_anim->Init();
     }

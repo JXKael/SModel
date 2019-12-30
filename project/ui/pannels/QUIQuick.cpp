@@ -215,8 +215,8 @@ void QUIQuick::LoadQuickThetas(const std::string &model_name) {
     models_map::iterator it = models_.find(model_name);
     if (it != models_.end()) {
         try {
-            io::CSVReader<3> centers_csv(project_path_ + "/data/" + model_name + "/thetas.csv");
-            centers_csv.read_header(io::ignore_extra_column, "id", "thetas", "mask");
+            csv::CSVReader<3> centers_csv(project_path_ + "/data/" + model_name + "/thetas.csv");
+            centers_csv.read_header(csv::ignore_extra_column, "id", "thetas", "mask");
             std::string id, thetas_s;
             int mask;
             int idx = 0;
@@ -231,7 +231,7 @@ void QUIQuick::LoadQuickThetas(const std::string &model_name) {
                 pose_mask_map[model_name][theta_name] = mask;
             }
         }
-        catch (io::error::can_not_open_file err) {
+        catch (csv::error::can_not_open_file err) {
             std::cout << err.what() << std::endl;
         }
         catch (unsigned int line) {

@@ -1,9 +1,13 @@
 ﻿#include <QApplication>
 #include "model/ModelCtrl.h"
 #include "ui/QUIManager.h"
+#include "signer/Signer.h"
 
 int main(int argc, char *argv[]) {
     const std::string project_path = "E:/Code/GitHub/SModel/project";
+    for (int i = 0; i < argc; ++i) {
+        std::cout << argv[i] << std::endl;
+    }
 
     QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     QApplication app(argc, argv);
@@ -35,6 +39,13 @@ int main(int argc, char *argv[]) {
 
     ui::QUIManager::Instance().Init();
     ui::QUIManager::Instance().Show();
+
+    //signer::Signer a_signer(project_path);
+    //signer::Glosses glosses;
+    //glosses.push_back(signer::LexicalItem("他们"));
+    //glosses.push_back(signer::LexicalItem("真"));
+    //glosses.push_back(signer::LexicalItem("漂亮"));
+    //a_signer.Animate(glosses);
 
     return app.exec();
 }

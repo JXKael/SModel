@@ -51,7 +51,7 @@
 #include <cerrno>
 #include <istream>
 
-namespace io {
+namespace csv {
 
 ////////////////////////////////////////////////////////////////////////////
 //                                 LineReader                             //
@@ -139,8 +139,8 @@ struct line_length_limit_exceeded : base, with_file_name, with_file_line {
 
 class ByteSourceBase {
 public:
-        virtual int read(char *buffer, int size) = 0;
-        virtual ~ByteSourceBase() {}
+    virtual int read(char *buffer, int size) = 0;
+    virtual ~ByteSourceBase() {}
 };
 
 namespace detail{
@@ -814,14 +814,10 @@ void chop_next_column(char *&line, char *&col_begin, char *&col_end) {
 }
 
 template<class trim_policy, class quote_policy>
-void parse_line(
-    char *line,
-    char **sorted_col,
-    const std::vector<int> &col_order
-){
+void parse_line(char *line, char **sorted_col, const std::vector<int> &col_order) {
     for (int i : col_order) {
         if (line == nullptr)
-            throw ::io::error::too_few_columns();
+            throw ::csv::error::too_few_columns();
         char*col_begin, *col_end;
         chop_next_column<quote_policy>(line, col_begin, col_end);
 
@@ -833,16 +829,11 @@ void parse_line(
         }
     }
     if (line != nullptr)
-        throw ::io::error::too_many_columns();
+        throw ::csv::error::too_many_columns();
 }
 
 template<unsigned column_count, class trim_policy, class quote_policy>
-void parse_header_line(
-        char*line,
-        std::vector<int>&col_order,
-        const std::string*col_name,
-        ignore_column ignore_policy
-){
+void parse_header_line(char*line, std::vector<int>&col_order, const std::string*col_name, ignore_column ignore_policy) {
     col_order.clear();
 
     bool found[column_count];
@@ -867,7 +858,7 @@ void parse_header_line(
                 break;
             }
         if (col_begin) {
-            if (ignore_policy & ::io::ignore_extra_column)
+            if (ignore_policy & ::csv::ignore_extra_column)
                 col_order.push_back(-1);
             else {
                 error::extra_column_in_header err;
@@ -876,7 +867,7 @@ void parse_header_line(
             }
         }
     }
-    if (!(ignore_policy & ::io::ignore_missing_column)) {
+    if (!(ignore_policy & ::csv::ignore_missing_column)) {
         for (unsigned i = 0; i < column_count; ++i) {
             if (!found[i]) {
                 error::missing_column_in_header err;
@@ -1085,7 +1076,7 @@ public:
     CSVReader &operator=(const CSVReader &) = delete;
 
     template<class ...Args>
-    explicit CSVReader(Args &&...args) : in(std::forward<Args>(args)...) {
+    explicit CSVReader(Args &&...args): in(std::forward<Args>(args)...) {
         std::fill(row, row + column_count, nullptr);
         col_order.resize(column_count);
         for (unsigned i = 0; i < column_count; ++i)
@@ -1164,10 +1155,10 @@ private:
 
     template<class T, class ...ColType>
     void parse_helper(std::size_t r, T&t, ColType&...cols) {
-        if(row[r]){
+        if (row[r]) {
             try {
                 try {
-                    ::io::detail::parse<overflow_policy>(row[r], t);
+                    ::csv::detail::parse<overflow_policy>(row[r], t);
                 } catch (error::with_column_content&err) {
                     err.set_column_content(row[r]);
                     throw;
@@ -1211,6 +1202,6 @@ public:
 };
 // class CSVReader
 
-} // namespace io
+} // namespace csv
 
 #endif // CSV_H

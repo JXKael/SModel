@@ -22,11 +22,13 @@ class QUIAnim : public QDialog {
     Q_OBJECT
 public:
     explicit QUIAnim(QWidget *patent = 0);
-    explicit QUIAnim(std::map<std::string, smodel::ModelCtrl *> &models);
+    QUIAnim(const std::string &project_path, std::map<std::string, smodel::ModelCtrl *> &models);
     ~QUIAnim();
 
 private:
+    const std::string project_path_;
     std::map<std::string, smodel::ModelCtrl *> &models_;
+
     std::map<std::string, std::map<int, smodel::Thetas>> keypoints;
 
     // animation
@@ -39,9 +41,12 @@ private:
     // UI
     QLineEdit *edit_maxframe;
     QLineEdit *edit_currframe;
+    QLineEdit *edit_fps;
     QPushButton *btn_play;
     QPushButton *btn_stop;
     std::map<std::string, QSlider *> sliders;
+    QLineEdit *file_path;
+    QLineEdit *file_name;
 
     QSignalMapper *sliders_mapper;
     QSignalMapper *keys_mapper;
@@ -54,6 +59,7 @@ public:
 private:
     QHBoxLayout *InitHead();
     QHBoxLayout *InitTimeline(const std::string &name, const smodel::ModelCtrl *model);
+    QHBoxLayout *InitOperation();
     inline bool isPlaying() { return this->timer->isActive(); }
     inline char *btnPlayText() { return this->isPlaying() ? "pause" : "play"; }
     const smodel::Thetas calcThetas(const std::string &name);
@@ -64,6 +70,7 @@ private Q_SLOTS:
     void onSliderValueChanged(const QString &name);
     void onClickKey(const QString &name);
     void updateTimer();
+    void onClickBtnSave();
 };
 // class QUIAnim
 

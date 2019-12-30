@@ -3,8 +3,10 @@
 
 using namespace ui;
 
-QUIAnim::QUIAnim(std::map<std::string, smodel::ModelCtrl *> &models)
-  : models_(models) {
+QUIAnim::QUIAnim(const std::string &project_path, std::map<std::string, smodel::ModelCtrl *> &models)
+  : project_path_(project_path),
+    models_(models)
+{
     max_frame = 120;
     curr_frame = 0;
     timer = new QTimer(this);
@@ -29,6 +31,7 @@ void QUIAnim::Init() {
         smodel::ModelCtrl *model = it->second;
         layout->addLayout(InitTimeline(name, model));
     }
+    layout->addLayout(InitOperation());
 
     connect(sliders_mapper, SIGNAL(mapped(const QString &)), this, SLOT(onSliderValueChanged(const QString &)));
     connect(keys_mapper, SIGNAL(mapped(const QString &)), this, SLOT(onClickKey(const QString &)));
@@ -42,7 +45,7 @@ void QUIAnim::Init() {
 }
 
 QHBoxLayout *QUIAnim::InitHead() {
-    QHBoxLayout *layout = new QHBoxLayout(this);
+    QHBoxLayout *layout = new QHBoxLayout();
     layout->setAlignment(Qt::AlignLeft);
 
     // 最大帧数
@@ -67,6 +70,18 @@ QHBoxLayout *QUIAnim::InitHead() {
     edit_currframe->setFixedHeight(SINGLE_LINE_HEIGHT);
     edit_currframe->setFixedWidth(SINGLE_BTN_WIDTH);
 
+    // fps
+    QLabel *label_fps = new QLabel("fps");
+    label_currframe->setFixedWidth(SINGLE_BTN_WIDTH);
+    label_currframe->setFixedHeight(SINGLE_LINE_HEIGHT);
+    label_currframe->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    this->edit_fps = new QLineEdit(QString("%1").arg(this->curr_frame));
+    edit_fps->setFixedWidth(SINGLE_BTN_WIDTH);
+    edit_fps->setFixedHeight(SINGLE_LINE_HEIGHT);
+    edit_fps->setFixedWidth(SINGLE_BTN_WIDTH);
+    edit_fps->setText(QString("%1").arg(this->fps));
+
     // 播放/暂停按钮
     this->btn_play = new QPushButton();
     btn_play->setFixedWidth(SINGLE_BTN_WIDTH);
@@ -86,6 +101,9 @@ QHBoxLayout *QUIAnim::InitHead() {
     layout->addSpacing(80);
     layout->addWidget(label_currframe);
     layout->addWidget(edit_currframe);
+    layout->addSpacing(80);
+    layout->addWidget(label_fps);
+    layout->addWidget(edit_fps);
     layout->addStretch();
     layout->addWidget(btn_play);
     layout->addWidget(btn_stop);
@@ -94,7 +112,7 @@ QHBoxLayout *QUIAnim::InitHead() {
 }
 
 QHBoxLayout *QUIAnim::InitTimeline(const std::string &name, const smodel::ModelCtrl *model) {
-    QHBoxLayout *layout = new QHBoxLayout(this);
+    QHBoxLayout *layout = new QHBoxLayout();
     layout->setAlignment(Qt::AlignLeft);
 
     QLabel *label_righthand = new QLabel(name.c_str());
@@ -123,6 +141,38 @@ QHBoxLayout *QUIAnim::InitTimeline(const std::string &name, const smodel::ModelC
     layout->addWidget(timeline);
     layout->addStretch();
     layout->addWidget(btn_key);
+
+    return layout;
+}
+
+QHBoxLayout *QUIAnim::InitOperation() {
+    QHBoxLayout *layout = new QHBoxLayout();
+    layout->setAlignment(Qt::AlignLeft);
+    // 文件路径
+    file_path = new QLineEdit();
+    file_path->setFocusPolicy(Qt::ClickFocus);
+    file_path->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
+    file_path->setFixedHeight(SINGLE_LINE_HEIGHT);
+    file_path->setText(QString("%1/data/signs/sign_data/").arg(project_path_.c_str()));
+
+    // 文件名称
+    file_name = new QLineEdit();
+    file_name->setFocusPolicy(Qt::ClickFocus);
+    file_name->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH / 4);
+    file_name->setFixedHeight(SINGLE_LINE_HEIGHT);
+    file_name->setPlaceholderText("sign id");
+
+    // 保存按钮
+    QPushButton *btn_save = new QPushButton();
+    btn_save->setText("Save");
+    btn_save->setFocusPolicy(Qt::ClickFocus);
+    btn_save->setFixedWidth(SINGLE_BTN_WIDTH);
+    btn_save->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_save, SIGNAL(pressed()), this, SLOT(onClickBtnSave()));
+
+    layout->addWidget(file_path);
+    layout->addWidget(file_name);
+    layout->addWidget(btn_save);
 
     return layout;
 }
@@ -224,5 +274,14 @@ void QUIAnim::updateTimer() {
         ++curr_frame;
     } else {
         this->onClickPlay();
+    }
+}
+
+void QUIAnim::onClickBtnSave() {
+    if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
+        const std::string file = (file_path->text() + file_name->text()).toStdString();
+    }
+    else {
+        QMessageBox::warning(this, tr("Error"), tr("Please fill the path & id"), QMessageBox::Yes);
     }
 }

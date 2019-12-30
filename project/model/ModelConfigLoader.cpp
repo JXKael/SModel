@@ -7,8 +7,8 @@ ModelConfigLoader::ModelConfigLoader() {}
 Centers ModelConfigLoader::LoadCenters(const std::string &path) {
     Centers centers;
     try {
-        io::CSVReader<5> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "position", "radius", "type");
+        csv::CSVReader<5> centers_csv(path);
+        centers_csv.read_header(csv::ignore_extra_column, "id", "name", "position", "radius", "type");
         int id, type;
         float radius;
         std::string name, position;
@@ -18,7 +18,7 @@ Centers ModelConfigLoader::LoadCenters(const std::string &path) {
                 convertToSphereType(type))
             );
         }
-    } catch (io::error::can_not_open_file err) {
+    } catch (csv::error::can_not_open_file err) {
         std::cout << "!!!无法打开文件: " << err.what() << std::endl;
     }
 
@@ -28,8 +28,8 @@ Centers ModelConfigLoader::LoadCenters(const std::string &path) {
 Bones ModelConfigLoader::LoadBones(const std::string &path) {
     Bones bones;
     try {
-        io::CSVReader<6> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "center_id", "parent_id", "attachment_ids", "init_local");
+        csv::CSVReader<6> centers_csv(path);
+        centers_csv.read_header(csv::ignore_extra_column, "id", "name", "center_id", "parent_id", "attachment_ids", "init_local");
         int id, center_id, parent_id;
         std::string name, attachment_ids, init_local;
         while (centers_csv.read_row(id, name, center_id, parent_id, attachment_ids, init_local)) {
@@ -38,7 +38,7 @@ Bones ModelConfigLoader::LoadBones(const std::string &path) {
                 convertToMat4(init_local))
             );
         }
-    } catch (io::error::can_not_open_file err) {
+    } catch (csv::error::can_not_open_file err) {
         std::cout << "!!!无法打开文件: " << err.what() << std::endl;
     }
 
@@ -48,8 +48,8 @@ Bones ModelConfigLoader::LoadBones(const std::string &path) {
 Dofs ModelConfigLoader::LoadDofs(const std::string &path) {
     Dofs dofs;
     try {
-        io::CSVReader<9> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "id", "name", "type", "free_type", "axis_type", "min", "max", "init_val", "bone_id");
+        csv::CSVReader<9> centers_csv(path);
+        centers_csv.read_header(csv::ignore_extra_column, "id", "name", "type", "free_type", "axis_type", "min", "max", "init_val", "bone_id");
         int id, type, axis_type, free_type, bone_id;
         std::string name;
         float min, max, init_val;
@@ -62,7 +62,7 @@ Dofs ModelConfigLoader::LoadDofs(const std::string &path) {
                 bone_id));
         }
     }
-    catch (io::error::can_not_open_file err) {
+    catch (csv::error::can_not_open_file err) {
         std::cout << "!!!无法打开文件: " << err.what() << std::endl;
     }
 
@@ -72,14 +72,14 @@ Dofs ModelConfigLoader::LoadDofs(const std::string &path) {
 Blocks ModelConfigLoader::LoadBlocks(const std::string &path) {
     Blocks blocks;
     try {
-        io::CSVReader<3> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "a", "b", "c");
+        csv::CSVReader<3> centers_csv(path);
+        centers_csv.read_header(csv::ignore_extra_column, "a", "b", "c");
         int a, b, c;
         while (centers_csv.read_row(a, b, c)) {
             blocks.push_back(Block(a, b, c));
         }
     }
-    catch (io::error::can_not_open_file err) {
+    catch (csv::error::can_not_open_file err) {
         std::cout << "!!!无法打开文件: " << err.what() << std::endl;
     }
 
@@ -89,14 +89,14 @@ Blocks ModelConfigLoader::LoadBlocks(const std::string &path) {
 BlockColors ModelConfigLoader::LoadBlockColors(const std::string &path) {
     BlockColors block_colors;
     try {
-        io::CSVReader<1> centers_csv(path);
-        centers_csv.read_header(io::ignore_extra_column, "mask_color");
+        csv::CSVReader<1> centers_csv(path);
+        centers_csv.read_header(csv::ignore_extra_column, "mask_color");
         int color;
         while (centers_csv.read_row(color)) {
             block_colors.push_back(BlockColor(color));
         }
     }
-    catch (io::error::can_not_open_file err) {
+    catch (csv::error::can_not_open_file err) {
         std::cout << "!!!无法打开文件: " << err.what() << std::endl;
     }
 
