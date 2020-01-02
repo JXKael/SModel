@@ -23,8 +23,8 @@
 #include "renderers/ConvolutionRendererFingerMask.h"
 
 #define M_PI 3.14159265358979323846
-#define GL_WINDOW_WIDTH 1600
-#define GL_WINDOW_HEIGHT 900
+#define GL_WINDOW_WIDTH 1200
+#define GL_WINDOW_HEIGHT 675
 
 namespace ui {
 

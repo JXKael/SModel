@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-namespace signer {
+namespace signs {
 
 // model_name -> model_ctrl
 typedef std::map<std::string, smodel::ModelCtrl *> models_map;
@@ -32,7 +32,10 @@ public:
 
     inline void AddModel(smodel::ModelCtrl &model) { models_[model.GetName()] = &model; }
 
-    void Animate(Glosses &glosses);
+    void ReloadSignsDir();
+    const std::map<SignId, std::string> &GetSavedSignDir() const;
+
+    SignDatas Animate(const Glosses &glosses);
 };
 
 } // namespace singer

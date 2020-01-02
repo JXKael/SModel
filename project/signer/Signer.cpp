@@ -1,6 +1,6 @@
 ﻿#include "Signer.h"
 
-using namespace signer;
+using namespace signs;
 
 Signer::Signer() {
     this->init_data_loader();
@@ -26,11 +26,15 @@ Signer::~Signer() {
     models_.clear();
 }
 
-void Signer::Animate(Glosses &glosses) {
-    Glosses::iterator it = glosses.begin();
-    while (it != glosses.end()) {
-        SignData sign_data = sign_loader->Load(*it);
+void Signer::ReloadSignsDir() {
+    this->sign_loader->ReloadSignsDir();
+}
 
-        ++it;
-    }
+const std::map<SignId, std::string> &Signer::GetSavedSignDir() const {
+    return sign_loader->GetSavedSignDir();
+}
+
+SignDatas Signer::Animate(const Glosses &glosses) {
+    SignDatas sign_datas = sign_loader->Load(glosses);
+    return sign_datas;
 }

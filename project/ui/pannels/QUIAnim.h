@@ -2,6 +2,7 @@
 #define QUI_ANIM_H
 
 #include "../QUIConst.h"
+#include "../../signer/Signer.h"
 
 #include <QDialog>
 #include <QLabel>
@@ -15,6 +16,10 @@
 #include <QModelIndex>
 #include <QSignalMapper>
 #include <QTimer>
+#include <QGridLayout>
+#include <QScrollArea>
+
+#include <fstream>
 
 namespace ui {
 
@@ -22,12 +27,13 @@ class QUIAnim : public QDialog {
     Q_OBJECT
 public:
     explicit QUIAnim(QWidget *patent = 0);
-    QUIAnim(const std::string &project_path, std::map<std::string, smodel::ModelCtrl *> &models);
+    QUIAnim(const std::string &project_path, models_map &models, signs::Signer *signer);
     ~QUIAnim();
 
 private:
     const std::string project_path_;
-    std::map<std::string, smodel::ModelCtrl *> &models_;
+    models_map &models_;
+    signs::Signer *signer_;
 
     std::map<std::string, std::map<int, smodel::Thetas>> keypoints;
 
@@ -47,9 +53,14 @@ private:
     std::map<std::string, QSlider *> sliders;
     QLineEdit *file_path;
     QLineEdit *file_name;
+    // 滑动框
+    QWidget *scroll_content;
+    QGridLayout *scroll_layout;
+    std::vector<QPushButton *> signs_btns;
 
     QSignalMapper *sliders_mapper;
     QSignalMapper *keys_mapper;
+    QSignalMapper *signs_mapper;
 
 public:
     void Init();
@@ -60,15 +71,21 @@ private:
     QHBoxLayout *InitHead();
     QHBoxLayout *InitTimeline(const std::string &name, const smodel::ModelCtrl *model);
     QHBoxLayout *InitOperation();
+    QScrollArea *InitSignsScroll();
+    void UpdateSignsScrollContent();
     inline bool isPlaying() { return this->timer->isActive(); }
     inline char *btnPlayText() { return this->isPlaying() ? "pause" : "play"; }
-    const smodel::Thetas calcThetas(const std::string &name);
+    const smodel::Thetas calcThetas(const std::string &name, const int &curr_frame);
+    std::vector<int> getKeyFrames(const std::string &name);
 
 private Q_SLOTS:
+    void onMaxFrameEditingFinished();
+    void onCurrFrameEditingFinished();
     void onClickPlay();
     void onClickStop();
     void onSliderValueChanged(const QString &name);
     void onClickKey(const QString &name);
+    void onClickKeyThree();
     void updateTimer();
     void onClickBtnSave();
 };

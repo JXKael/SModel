@@ -1,16 +1,16 @@
 ﻿#ifndef LEXICAL_ITEM_H
 #define LEXICAL_ITEM_H
 
-
 #include <iostream>
 #include <string>
 #include <map>
 #include <vector>
 
-namespace signer {
+namespace signs {
 
 enum LexicalType {
     kWord = 0,
+    kPhrase,
     kClassifier
 };
 
@@ -21,11 +21,14 @@ private:
 
 public:
     LexicalItem();
-    LexicalItem(const LexicalItem &lexical_item);
-    explicit LexicalItem(const std::string &word, const LexicalType &type=LexicalType::kWord);
+    explicit LexicalItem(const std::string &word, const LexicalType &type = LexicalType::kWord);
     ~LexicalItem();
 
+    LexicalItem &operator=(const LexicalItem &) = delete;
+
     inline const std::string GetWord() const { return word_; }
+
+    inline const LexicalType &Type() const { return type_; }
 };
 
 typedef std::vector<LexicalItem> Glosses;

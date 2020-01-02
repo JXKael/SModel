@@ -8,6 +8,7 @@
 #include "pannels/QUIQuick.h"
 #include "pannels/QUIRenderImg.h"
 #include "pannels/QUIPointCloud.h"
+#include "../signer/Signer.h"
 
 namespace ui {
 
@@ -27,6 +28,8 @@ private:
 
     models_map models;
     std::string project_path_;
+
+    signs::Signer *signer;
 
 private:
     QUIManager();
@@ -48,6 +51,9 @@ public:
     models_map &GetModels();
     inline GLWindow *GetGLWindow() const { return gl_window; }
     QUIQuick *GetUIQuick();
+
+    void SetSigner(signs::Signer &signer);
+    inline const signs::Signer *GetSigner() const { return this->signer; }
 
 public:
     void ShowQuickPannel();

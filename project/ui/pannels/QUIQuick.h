@@ -1,7 +1,6 @@
 ﻿#ifndef QUI_QUICK_H
 #define QUI_QUICK_H
 
-#include "utils/csv.h"
 #include "../QUIConst.h"
 
 #include <fstream>

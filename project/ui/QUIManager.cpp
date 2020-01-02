@@ -58,6 +58,10 @@ QUIQuick *QUIManager::GetUIQuick() {
     return ui_quick;
 }
 
+void QUIManager::SetSigner(signs::Signer &signer) {
+    this->signer = &signer;
+}
+
 void QUIManager::ShowQuickPannel() {
     if (nullptr == ui_quick) {
         ui_quick = new QUIQuick(project_path_, models, gl_window->GetRenderers(), gl_window->GetRenderersState());
@@ -69,6 +73,8 @@ void QUIManager::ShowQuickPannel() {
         if (!isVisible) {
             ui_quick->show();
         }
+        const QPoint pos = this->gl_window->pos();
+        ui_quick->move(pos.x() - 250, pos.y());
     }
 }
 
@@ -86,6 +92,8 @@ void QUIManager::ShowBodyPannel() {
             if (!isVisible) {
                 ui_body->show();
             }
+            const QPoint pos = this->gl_window->pos();
+            ui_body->move(pos.x() + GL_WINDOW_WIDTH + 20, pos.y());
         }
     } else {
         std::cout << "no " << BODY << " model" << std::endl;
@@ -106,6 +114,8 @@ void QUIManager::ShowRightHandPannel() {
             if (!isVisible) {
                 ui_right_hand->show();
             }
+            const QPoint pos = this->gl_window->pos();
+            ui_right_hand->move(pos.x() + GL_WINDOW_WIDTH + 40, pos.y() + 20);
         }
     } else {
         std::cout << "no " << RIGHT_HAND << " model" << std::endl;
@@ -126,6 +136,8 @@ void QUIManager::ShowLeftHandPannel() {
             if (!isVisible) {
                 ui_left_hand->show();
             }
+            const QPoint pos = this->gl_window->pos();
+            ui_left_hand->move(pos.x() + GL_WINDOW_WIDTH + 60, pos.y() + 40);
         }
     } else {
         std::cout << "no " << LEFT_HAND << " model" << std::endl;
@@ -134,7 +146,7 @@ void QUIManager::ShowLeftHandPannel() {
 
 void QUIManager::ShowAnimPannel() {
     if (nullptr == ui_anim) {
-        ui_anim = new QUIAnim(project_path_, models);
+        ui_anim = new QUIAnim(project_path_, models, this->signer);
         ui_anim->setParent(gl_window, Qt::WindowType::Dialog);
         ui_anim->Init();
     }
@@ -143,6 +155,8 @@ void QUIManager::ShowAnimPannel() {
         if (!isVisible) {
             ui_anim->show();
         }
+        const QPoint pos = this->gl_window->pos();
+        ui_anim->move(pos.x(), pos.y() + ceil(GL_WINDOW_HEIGHT * 4 / 7));
     }
 }
 
@@ -157,6 +171,8 @@ void QUIManager::ShowRenderImgPannel() {
         if (!isVisible) {
             ui_render_img->show();
         }
+        const QPoint pos = this->gl_window->pos();
+        ui_render_img->move(pos.x(), pos.y() - 120);
     }
 }
 

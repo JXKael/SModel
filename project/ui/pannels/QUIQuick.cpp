@@ -48,7 +48,6 @@ void QUIQuick::Init() {
     // 总的弹板设置
     this->setLayout(layout);
     this->resize(520, 520);
-    this->move(80, 20);
     this->setWindowTitle("Control Pannel");
 }
 

@@ -134,7 +134,6 @@ void QUIRenderImg::Init() {
     // 总的弹板设置
     this->setLayout(layout);
     this->resize(600, 100);
-    this->move(80, 20);
     this->setWindowTitle("Render Image");
 }
 

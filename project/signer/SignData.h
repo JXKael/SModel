@@ -1,7 +1,6 @@
 ﻿#ifndef SIGN_DATA_H
 #define SIGN_DATA_H
 
-#include "LexicalItem.h"
 #include "utils/csv.h"
 #include "utils/csv_convert.h"
 
@@ -10,36 +9,38 @@
 #include <map>
 #include <vector>
 
-namespace signer {
+namespace signs {
 
 typedef int SignId;
+typedef std::vector<SignId> SignIds;
+
 typedef unsigned int Frame;
-typedef std::vector<float> Params;
-typedef std::vector<Params> FrameParams;
+typedef std::vector<float> FrameParams;
+typedef std::vector<FrameParams> Params;
 
 class SignData {
 private:
-    LexicalItem lexical_item_;
     SignId id;
-    FrameParams frame_params;
+    Params params;
 public:
     SignData();
-    SignData(SignData &sign_data);
-    SignData(const SignId &sign_id, const LexicalItem &lexical_item);
-    explicit SignData(const FrameParams &frame_params);
+    SignData(const SignId &sign_id, const Params &all_params);
 
     ~SignData();
 
-    void LoadParams(const std::string &data_path);
-    void Optimize();
+    SignData &operator=(const SignData &) = delete;
 
-    void AddFrame(const Params &params);
-    void InsertFrame(const Frame &frame, const Params &params);
+    void AddFrame(const FrameParams &frame_params);
+    void InsertFrame(const Frame &frame, const FrameParams &frame_params);
     void DelFrame(const Frame &frame);
-    void ModifyFrame(const Frame &frame, const Params &params);
-    Params GetFrame(const Frame &frame);
-    inline Frame FrameCount() const { return (Frame)frame_params.size(); }
+    void ModifyFrame(const Frame &frame, const FrameParams &params);
+    FrameParams GetFrame(const Frame &frame);
+    inline Frame FrameCount() const { return (Frame)params.size(); }
+
+    bool IsValid();
 };
+
+typedef std::vector<SignData> SignDatas;
 
 } // namespace singer
 

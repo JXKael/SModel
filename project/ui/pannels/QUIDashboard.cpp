@@ -36,7 +36,6 @@ void QUIDashboard::Init() {
     // 总的弹板设置
     this->setLayout(layout);
     this->resize(1080, 916);
-    this->move(80, 20);
     this->setWindowTitle("Dash board");
 }
 
