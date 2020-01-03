@@ -2,7 +2,8 @@
 #define QUI_MANAGER_H
 
 #include "QUIConst.h"
-#include "GLWindow.h"
+#include "MainWindow.h"
+#include "GLWidget.h"
 #include "pannels/QUIAnim.h"
 #include "pannels/QUIDashboard.h"
 #include "pannels/QUIQuick.h"
@@ -12,9 +13,16 @@
 
 namespace ui {
 
+#define GL_WINDOW_WIDTH 1200
+#define GL_WINDOW_HEIGHT 675
+
+#define MAIN_WIN_WIDTH 1200
+#define MAIN_WIN_HEIGHT 675
+
 class QUIManager {
 private:
-    GLWindow *gl_window;
+    MainWindow *main_win;
+    GLWidget *gl_widget;
     QUIQuick *ui_quick;
     QUIDashboard *ui_body;
     QUIDashboard *ui_right_hand;
@@ -45,11 +53,10 @@ public:
     void Show();
     void UpdateGL();
     void SetProjectPath(const std::string &path) { this->project_path_ = path; }
-    void SetGLWindow(GLWindow *window) { gl_window = window; }
     inline void AddModel(smodel::ModelCtrl &model) { models[model.GetName()] = &model; }
     smodel::ModelCtrl *GetModel(const std::string &name);
     models_map &GetModels();
-    inline GLWindow *GetGLWindow() const { return gl_window; }
+    inline GLWidget *GetGLWindow() const { return gl_widget; }
     QUIQuick *GetUIQuick();
 
     void SetSigner(signs::Signer &signer);

@@ -75,6 +75,10 @@ const std::map<SignId, std::string> &SignDataLoader::GetSavedSignDir() const {
     return signs_dir;
 }
 
+SignData SignDataLoader::Load(const SignId &id) {
+    return SignData(id, LoadParams(id));
+}
+
 SignDatas SignDataLoader::Load(const Glosses &glosses) {
     SignDatas sign_datas;
     Glosses::const_iterator it = glosses.begin();

@@ -34,6 +34,18 @@ const std::map<SignId, std::string> &Signer::GetSavedSignDir() const {
     return sign_loader->GetSavedSignDir();
 }
 
+SignData Signer::GetSignData(const SignId &id) {
+    return sign_loader->Load(id);
+}
+
+SignDatas Signer::Animate(const std::string &sentence) {
+    signs::Glosses glosses;
+    glosses.push_back(signs::LexicalItem("她")); // 168
+    glosses.push_back(signs::LexicalItem("们")); // 370
+    glosses.push_back(signs::LexicalItem("漂亮")); // 20
+    return this->Animate(glosses);
+}
+
 SignDatas Signer::Animate(const Glosses &glosses) {
     SignDatas sign_datas = sign_loader->Load(glosses);
     return sign_datas;

@@ -5,10 +5,10 @@ using namespace ui;
 
 smodel::Thetas convertToThetas(const std::string &thetas_s);
 
-QUIRenderImg::QUIRenderImg(const std::string &project_path, models_map &models, GLWindow *gl_window)
+QUIRenderImg::QUIRenderImg(const std::string &project_path, models_map &models, GLWidget *gl_widget)
   : project_path_(project_path),
     models_(models),
-    gl_window_(gl_window)
+    gl_widget_(gl_widget)
 {
 
 }
@@ -147,18 +147,18 @@ void QUIRenderImg::UpdateGL() {
 }
 
 void QUIRenderImg::onClickBtnNormScreen() {
-    gl_window_->SetRenderHandScreen();
+    gl_widget_->SetRenderHandScreen();
 }
 
 void QUIRenderImg::onClickBtnResetScreen() {
-    gl_window_->ResetScreen();
+    gl_widget_->ResetScreen();
 }
 
 
 void QUIRenderImg::onClickBtnRenderOne() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
         const std::string file = (file_path->text() + file_name->text() + ".png").toStdString();
-        gl_window_->SaveScreenImg(file);
+        gl_widget_->SaveScreenImg(file);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -167,7 +167,7 @@ void QUIRenderImg::onClickBtnRenderOne() {
 
 void QUIRenderImg::onClickBtnRenderBatch() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "RGB", "png");
+        gl_widget_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "RGB", "png");
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -178,7 +178,7 @@ void QUIRenderImg::onClickBtnRenderBatch() {
 void QUIRenderImg::onClickBtnRenderMaskOne() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
         const std::string file = (file_path->text() + file_name->text() + "-mask.png").toStdString();
-        gl_window_->SaveScreenImgMask(file);
+        gl_widget_->SaveScreenImgMask(file);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -187,7 +187,7 @@ void QUIRenderImg::onClickBtnRenderMaskOne() {
 
 void QUIRenderImg::onClickBtnRenderMaskBatch() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "mask", "png", true);
+        gl_widget_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "mask", "png", true);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -197,7 +197,7 @@ void QUIRenderImg::onClickBtnRenderMaskBatch() {
 void QUIRenderImg::onClickBtnRenderFingerMaskOne() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
         const std::string file = (file_path->text() + file_name->text() + "-finger-mask.png").toStdString();
-        gl_window_->SaveScreenImgMask(file);
+        gl_widget_->SaveScreenImgMask(file);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);
@@ -206,7 +206,7 @@ void QUIRenderImg::onClickBtnRenderFingerMaskOne() {
 
 void QUIRenderImg::onClickBtnRenderFingerMaskBatch() {
     if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        gl_window_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "finger-mask", "png", true);
+        gl_widget_->SaveScreenImgBatch(file_path->text().toStdString(), file_name->text().toStdString(), "finger-mask", "png", true);
     }
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the image's path & name"), QMessageBox::Yes);

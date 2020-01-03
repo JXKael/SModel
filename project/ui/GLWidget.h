@@ -23,8 +23,6 @@
 #include "renderers/ConvolutionRendererFingerMask.h"
 
 #define M_PI 3.14159265358979323846
-#define GL_WINDOW_WIDTH 1200
-#define GL_WINDOW_HEIGHT 675
 
 namespace ui {
 
@@ -33,7 +31,7 @@ const glm::vec3 kCameraCenter = glm::vec3(0, 100, 1200);
 const glm::vec3 kModelCenter_RenderHand = glm::vec3(0, 0, 123);
 const glm::vec3 kCameraCenter_RenderHand = glm::vec3(0, 0, 600);
 
-class GLWindow : public QOpenGLWidget {
+class GLWidget : public QOpenGLWidget {
     Q_OBJECT
 
 private:
@@ -50,8 +48,8 @@ private:
     std::string project_path_;
 
 public:
-    GLWindow(QWidget *parent = nullptr);
-    ~GLWindow();
+    GLWidget(QWidget *parent = nullptr);
+    ~GLWidget();
 
     void SetupRenderers(models_map &models);
     void ClearRenderer();
@@ -83,7 +81,7 @@ protected:
     // void keyReleaseEvent(QKeyEvent *event) override;
 
     void ProcessImage();
-}; // class GLWindow
+}; // class GLWidget
 
 } // namespace ui
 

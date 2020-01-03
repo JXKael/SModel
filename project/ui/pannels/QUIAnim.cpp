@@ -1,7 +1,7 @@
 ﻿#include "QUIAnim.h"
 #include "QUIManager.h"
 
-#include "../../signer/Signer.h"
+#include "../../signer/SignData.h"
 
 using namespace ui;
 
@@ -191,9 +191,27 @@ QHBoxLayout *QUIAnim::InitOperation() {
     btn_save->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_save, SIGNAL(pressed()), this, SLOT(onClickBtnSave()));
 
+    // 一句话
+    QLineEdit *edit_sentence = new QLineEdit();
+    edit_sentence->setFocusPolicy(Qt::ClickFocus);
+    edit_sentence->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
+    edit_sentence->setFixedHeight(SINGLE_LINE_HEIGHT);
+    edit_sentence->setPlaceholderText("edit sentence");
+
+    // 播放
+    QPushButton *btn_play = new QPushButton();
+    btn_play->setText("sentence");
+    btn_play->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    btn_play->setFixedWidth(SINGLE_BTN_WIDTH);
+    btn_play->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_play, SIGNAL(pressed()), this, SLOT(onClickBtnPlaySentence()));
+
     layout->addWidget(file_path);
     layout->addWidget(file_name);
     layout->addWidget(btn_save);
+    layout->addStretch();
+    layout->addWidget(edit_sentence);
+    layout->addWidget(btn_play);
 
     return layout;
 }
@@ -240,7 +258,7 @@ void QUIAnim::UpdateSignsScrollContent() {
         btn->setText(QString("%1").arg(id));
         btn->setFixedHeight(SINGLE_BTN_HEIGHT);
         btn->setFixedWidth(2 * SINGLE_BTN_HEIGHT);
-        btn->setFocusPolicy(Qt::NoFocus);
+        btn->setFocusPolicy(Qt::FocusPolicy::ClickFocus);
 
         // 绑定按钮消息
         connect(btn, SIGNAL(pressed()), signs_mapper, SLOT(map()));
@@ -252,6 +270,13 @@ void QUIAnim::UpdateSignsScrollContent() {
 
         i++;
         it++;
+    }
+}
+
+void QUIAnim::UpdateModel(const int &frame) {
+    int at_frame = frame == -1 ? this->curr_frame : frame;
+    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        this->UpdateModel(it->first, calcThetas(it->first, at_frame));
     }
 }
 
@@ -306,6 +331,20 @@ const smodel::Thetas QUIAnim::calcThetas(const std::string &name, const int &cur
 }
 
 
+void QUIAnim::ConverSignDataToKeypoints(signs::SignData &sign_data, const int &start) {
+    int frame_count = (int)sign_data.FrameCount();
+    for (signs::Frame i = 0; i < frame_count; ++i) {
+        models_map::iterator it = models_.begin();
+        while (it != models_.end()) {
+            signs::FrameParams params = sign_data.GetParams(it->first, i);
+            if (params.size() > 0) {
+                keypoints[it->first][i + start] = params;
+            }
+            it++;
+        }
+    }
+}
+
 /// >> SLOT 事件函数
 
 
@@ -358,10 +397,8 @@ void QUIAnim::onSliderValueChanged(const QString &name) {
     std::string model_name = name.toStdString();
     curr_frame = this->sliders[model_name]->value();
     edit_currframe->setText(QString("%1").arg(curr_frame));
-    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
-        this->UpdateModel(it->first, calcThetas(it->first, this->curr_frame));
-    }
 
+    this->UpdateModel();
     this->UpdateGL();
 
     disconnect(sliders_mapper, SIGNAL(mapped(const QString &)), this, SLOT(onSliderValueChanged(const QString &)));
@@ -433,7 +470,7 @@ void QUIAnim::onClickBtnSave() {
                         it_thetas++;
                     }
                     int i = 1;
-                    int size = saved_data[SIGNER_BODY_SAVED_HEADER].size();
+                    size_t size = saved_data[SIGNER_BODY_SAVED_HEADER].size();
                     for (const float &v : saved_data[SIGNER_BODY_SAVED_HEADER]) {
                         i++ < size ? fout << v << "#" : fout << v << ",";
                     }
@@ -467,4 +504,53 @@ void QUIAnim::onClickBtnSave() {
     else {
         QMessageBox::warning(this, tr("Error"), tr("Please fill the path & id"), QMessageBox::Yes);
     }
+}
+
+void QUIAnim::onClickSignsBtn(const int &id) {
+    signs::SignData sign_data = this->signer_->GetSignData((signs::SignId)id);
+    if (sign_data.IsValid()) {
+        QMessageBox::StandardButton res = QMessageBox::question(this, tr("Question"), tr("Replace the animation?"), QMessageBox::Yes | QMessageBox::Cancel);
+        if (res == QMessageBox::Yes) {
+            keypoints.clear();
+            this->curr_frame = 0;
+            this->max_frame = (int)sign_data.FrameCount();
+
+            this->ConverSignDataToKeypoints(sign_data, 0);
+
+            edit_maxframe->setText(QString("%1").arg(max_frame));
+            this->onMaxFrameEditingFinished();
+            edit_currframe->setText(QString("%1").arg(curr_frame));
+            this->onCurrFrameEditingFinished();
+
+            this->UpdateModel();
+            this->UpdateGL();
+            this->onClickPlay();
+        }
+    }
+}
+
+void QUIAnim::onClickBtnPlaySentence() {
+    keypoints.clear();
+    this->curr_frame = 0;
+    this->max_frame = 0;
+
+    signs::SignDatas sign_datas = signer_->Animate("");
+    signs::SignDatas::iterator it = sign_datas.begin();
+    while (it != sign_datas.end()) {
+        this->ConverSignDataToKeypoints(*it, this->max_frame);
+
+        this->max_frame += it->FrameCount();
+        this->max_frame += 30;
+
+        it++;
+    }
+
+    edit_maxframe->setText(QString("%1").arg(max_frame));
+    this->onMaxFrameEditingFinished();
+    edit_currframe->setText(QString("%1").arg(curr_frame));
+    this->onCurrFrameEditingFinished();
+
+    this->UpdateModel();
+    this->UpdateGL();
+    this->onClickPlay();
 }

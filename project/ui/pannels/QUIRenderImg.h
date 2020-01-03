@@ -2,7 +2,7 @@
 #define QUI_RENDER_IMG_H
 
 #include "../QUIConst.h"
-#include "../GLWindow.h"
+#include "../GLWidget.h"
 
 #include <QDialog>
 #include <QLabel>
@@ -25,13 +25,13 @@ class QUIRenderImg : public QDialog {
     Q_OBJECT
 public:
     explicit QUIRenderImg(QWidget *patent = 0);
-    QUIRenderImg(const std::string &project_path, models_map &models, GLWindow *gl_window);
+    QUIRenderImg(const std::string &project_path, models_map &models, GLWidget *gl_widget);
     ~QUIRenderImg();
 
 private:
     const std::string project_path_;
     models_map &models_;
-    GLWindow *gl_window_;
+    GLWidget *gl_widget_;
 
     QLineEdit *file_path;
     QLineEdit *file_name;

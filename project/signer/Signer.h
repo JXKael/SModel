@@ -34,7 +34,9 @@ public:
 
     void ReloadSignsDir();
     const std::map<SignId, std::string> &GetSavedSignDir() const;
+    SignData GetSignData(const SignId &id);
 
+    SignDatas Animate(const std::string &sentence);
     SignDatas Animate(const Glosses &glosses);
 };
 

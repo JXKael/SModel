@@ -18,6 +18,7 @@
 #include <QTimer>
 #include <QGridLayout>
 #include <QScrollArea>
+#include <QMessageBox>
 
 #include <fstream>
 
@@ -39,7 +40,6 @@ private:
 
     // animation
     const int fps = 60;
-    const int timeline_width = 1200;
     int max_frame;
     int curr_frame;
     QTimer *timer;
@@ -64,6 +64,7 @@ private:
 
 public:
     void Init();
+    void UpdateModel(const int &frame = -1);
     void UpdateModel(const std::string &name, const smodel::Thetas &thetas);
     void UpdateGL();
 
@@ -75,8 +76,9 @@ private:
     void UpdateSignsScrollContent();
     inline bool isPlaying() { return this->timer->isActive(); }
     inline char *btnPlayText() { return this->isPlaying() ? "pause" : "play"; }
-    const smodel::Thetas calcThetas(const std::string &name, const int &curr_frame);
     std::vector<int> getKeyFrames(const std::string &name);
+    const smodel::Thetas calcThetas(const std::string &name, const int &curr_frame);
+    void ConverSignDataToKeypoints(signs::SignData &sign_data, const int &start);
 
 private Q_SLOTS:
     void onMaxFrameEditingFinished();
@@ -88,6 +90,8 @@ private Q_SLOTS:
     void onClickKeyThree();
     void updateTimer();
     void onClickBtnSave();
+    void onClickSignsBtn(const int &id);
+    void onClickBtnPlaySentence();
 };
 // class QUIAnim
 

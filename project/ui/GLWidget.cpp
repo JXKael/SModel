@@ -1,4 +1,4 @@
-﻿#include "GLWindow.h"
+﻿#include "GLWidget.h"
 #include "QUIManager.h"
 #include "utils/dir_utils.h"
 
@@ -17,7 +17,7 @@ using namespace ui;
 cv::Mat QImage2cvMat(QImage &image, bool clone = true, bool rb_swap = false);
 cv::Mat convertToMaskImg(cv::Mat &rgba_img);
 
-GLWindow::GLWindow(QWidget *parent)
+GLWidget::GLWidget(QWidget *parent)
   : QOpenGLWidget(parent),
     model_center(kModelCenter),
     camera_center(kCameraCenter),
@@ -27,13 +27,13 @@ GLWindow::GLWindow(QWidget *parent)
     is_mouse_pressing = false;
 }
 
-GLWindow::~GLWindow() {
+GLWidget::~GLWidget() {
     makeCurrent();
     ClearRenderer();
     doneCurrent();
 }
 
-void GLWindow::SetupRenderers(models_map &models) {
+void GLWidget::SetupRenderers(models_map &models) {
     this->ClearRenderer();
     // 模型渲染
     int idx = 0;
@@ -69,11 +69,11 @@ void GLWindow::SetupRenderers(models_map &models) {
     renderers_state[150] = true;
 }
 
-void GLWindow::ClearRenderer() {
+void GLWidget::ClearRenderer() {
     renderers.clear();
 }
 
-void GLWindow::SetRendererState(const int &id, const bool &is_render) {
+void GLWidget::SetRendererState(const int &id, const bool &is_render) {
     renderers_state_map::iterator it = renderers_state.find(id);
     if (it != renderers_state.end()) {
         it->second = is_render;
@@ -82,7 +82,7 @@ void GLWindow::SetRendererState(const int &id, const bool &is_render) {
 
 // OpenGL
 
-void GLWindow::initializeGL() {
+void GLWidget::initializeGL() {
     for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
         it->second->InitializeGL();
     }
@@ -90,13 +90,13 @@ void GLWindow::initializeGL() {
     std::cout << "--> OpenGL 版本: " << glGetString(GL_VERSION) << std::endl;
 }
 
-void GLWindow::resizeGL(int w, int h) {
+void GLWidget::resizeGL(int w, int h) {
     for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
         it->second->ResizeGL(w, h);
     }
 }
 
-void GLWindow::paintGL() {
+void GLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -119,17 +119,17 @@ void GLWindow::paintGL() {
 
 
 // Render Images
-void GLWindow::SaveScreenImg(const std::string &file_name) {
+void GLWidget::SaveScreenImg(const std::string &file_name) {
     cv::Mat rgba_image = QImage2cvMat(grabFramebuffer());
     cv::imwrite(file_name, rgba_image);
 }
 
-void GLWindow::SaveScreenImgMask(const std::string &file_name) {
+void GLWidget::SaveScreenImgMask(const std::string &file_name) {
     cv::Mat rgba_image = QImage2cvMat(grabFramebuffer());
     cv::imwrite(file_name, convertToMaskImg(rgba_image));
 }
 
-void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &batch_name, const std::string &file_suffix, const bool &is_mask) {
+void GLWidget::SaveScreenImgBatch(const std::string &file_path, const std::string &file_name, const std::string &batch_name, const std::string &file_suffix, const bool &is_mask) {
     smodel::ModelCtrl *body_model = QUIManager::Instance().GetModel(BODY);
     if (nullptr != body_model) {
         float yaw = 0.0f;   // 0~360
@@ -160,7 +160,7 @@ void GLWindow::SaveScreenImgBatch(const std::string &file_path, const std::strin
     }
 }
 
-void GLWindow::SetRenderHandScreen() {
+void GLWidget::SetRenderHandScreen() {
     smodel::ModelCtrl *left_hand_model = QUIManager::Instance().GetModel(LEFT_HAND);
     smodel::ModelCtrl *right_hand_model = QUIManager::Instance().GetModel(RIGHT_HAND);
     if (nullptr != left_hand_model && nullptr != right_hand_model) {
@@ -172,7 +172,7 @@ void GLWindow::SetRenderHandScreen() {
     }
 }
 
-void GLWindow::ResetScreen() {
+void GLWidget::ResetScreen() {
     camera_center = kCameraCenter;
     model_center = kModelCenter;
     camera.Reset(camera_center, model_center);
@@ -182,21 +182,21 @@ void GLWindow::ResetScreen() {
 
 // event
 
-void GLWindow::mousePressEvent(QMouseEvent *event) {
+void GLWidget::mousePressEvent(QMouseEvent *event) {
     cursor_pos.x = event->x();
     cursor_pos.y = event->y();
 
     is_mouse_pressing = true;
 }
 
-void GLWindow::mouseReleaseEvent(QMouseEvent *event) {
+void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
     camera.SetBasePosition();
     camera.SetBaseEulerAngles();
 
     is_mouse_pressing = false;
 }
 
-void GLWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+void GLWidget::mouseDoubleClickEvent(QMouseEvent *event) {
     // alt + double LB
     if (QApplication::keyboardModifiers() == Qt::AltModifier && event->button() == Qt::LeftButton) {
         camera_center = kCameraCenter;
@@ -206,7 +206,7 @@ void GLWindow::mouseDoubleClickEvent(QMouseEvent *event) {
     this->update();
 }
 
-void GLWindow::mouseMoveEvent(QMouseEvent *event) {
+void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     float xoffset = (float)event->x() - (float)cursor_pos.x;
     float yoffset = (float)event->y() - (float)cursor_pos.y;
     // std::cout << xoffset << ", " << yoffset << std::endl;
@@ -237,7 +237,7 @@ void GLWindow::mouseMoveEvent(QMouseEvent *event) {
     this->update();
 }
 
-void GLWindow::wheelEvent(QWheelEvent *event) {
+void GLWidget::wheelEvent(QWheelEvent *event) {
     // std::cout << event->angleDelta().x() << std::endl;
     if (event->orientation() == Qt::Horizontal)
         camera.ProcessScroll((float)event->angleDelta().x());
@@ -247,7 +247,7 @@ void GLWindow::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
-void GLWindow::keyPressEvent(QKeyEvent *event) {
+void GLWidget::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Qt::Key_0:
         QUIManager::Instance().ShowQuickPannel();
@@ -341,7 +341,7 @@ int get_seg_line(cv::Mat &image_l) {
     return seg;
 }
 
-void GLWindow::ProcessImage() {
+void GLWidget::ProcessImage() {
     std::string depth_img_src = "E:/Datasets/SignData_30/Original/output_A/depth_0.png";
     std::string color_img_src = "E:/Datasets/SignData_30/Original/output_A/color_0.png";
     std::string dst_img_path = color_img_src.substr(0, 42) + "color_0_ppp.png";

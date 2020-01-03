@@ -73,3 +73,37 @@ FrameParams SignData::GetFrame(const Frame &frame) {
 bool SignData::IsValid() {
     return this->FrameCount() > 0 && id >= 0;
 }
+
+FrameParams SignData::GetParams(const std::string &model_name, const Frame &frame) {
+    if (model_name == "body") {
+        return GetBodyParams(frame);
+    }
+    else if (model_name == "right_hand") {
+        return GetRightHandParams(frame);
+    }
+    else if (model_name == "left_hand") {
+        return GetLeftHandParams(frame);
+    }
+    else {
+        return FrameParams();
+    }
+}
+
+FrameParams SignData::GetBodyParams(const Frame &frame) {
+    FrameParams res;
+    res.insert(res.end(), params[frame].begin(), params[frame].begin() + 23);
+    return res;
+}
+
+FrameParams SignData::GetRightHandParams(const Frame &frame) {
+    FrameParams res;
+    res.insert(res.end(), params[frame].begin() + 23, params[frame].begin() + 23 + 26);
+    return res;
+}
+
+FrameParams SignData::GetLeftHandParams(const Frame &frame) {
+    FrameParams res;
+    res.insert(res.end(), params[frame].begin() + 23 + 26, params[frame].end());
+    return res;
+}
+

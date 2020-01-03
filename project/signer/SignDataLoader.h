@@ -36,6 +36,7 @@ public:
     const std::string GetGlossesMapFilePath();
     inline std::vector<std::string>::size_type Size() { return signs_dir.size(); }
 
+    SignData Load(const SignId &id);
     SignDatas Load(const Glosses &glosses);
     SignDatas SignDataLoader::LoadPartSignDatas(const LexicalItem &lexical_item);
     SignIds SearchSignIds(const std::string &word);

@@ -3,7 +3,8 @@
 using namespace ui;
 
 QUIManager::QUIManager() {
-    gl_window = nullptr;
+    main_win = nullptr;
+    gl_widget = nullptr;
     ui_quick = nullptr;
     ui_body = nullptr;
     ui_right_hand = nullptr;
@@ -21,15 +22,25 @@ QUIManager &QUIManager::Instance() {
 }
 
 void QUIManager::Init() {
-    gl_window->SetupRenderers(models);
+    this->main_win = new MainWindow();
+    main_win->Init();
+    main_win->resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT);
+
+    this->gl_widget = new GLWidget();
+    gl_widget->SetProjectPath(project_path_);
+    gl_widget->SetupRenderers(models);
+    gl_widget->setMinimumWidth(50);
+    gl_widget->setMinimumHeight(50);
+
+    main_win->SetGLWidget(gl_widget);
 }
 
 void QUIManager::Show() {
-    this->gl_window->show();
+    main_win->show();
 }
 
 void QUIManager::UpdateGL() {
-    this->gl_window->update();
+    this->gl_widget->update();
 }
 
 void QUIManager::SetSelected(const std::string &name, const int &center_id) {
@@ -64,8 +75,8 @@ void QUIManager::SetSigner(signs::Signer &signer) {
 
 void QUIManager::ShowQuickPannel() {
     if (nullptr == ui_quick) {
-        ui_quick = new QUIQuick(project_path_, models, gl_window->GetRenderers(), gl_window->GetRenderersState());
-        ui_quick->setParent(gl_window, Qt::WindowType::Dialog);
+        ui_quick = new QUIQuick(project_path_, models, gl_widget->GetRenderers(), gl_widget->GetRenderersState());
+        ui_quick->setParent(gl_widget, Qt::WindowType::Dialog);
         ui_quick->Init();
     }
     if (nullptr != ui_quick) {
@@ -73,7 +84,7 @@ void QUIManager::ShowQuickPannel() {
         if (!isVisible) {
             ui_quick->show();
         }
-        const QPoint pos = this->gl_window->pos();
+        const QPoint pos = this->main_win->pos();
         ui_quick->move(pos.x() - 250, pos.y());
     }
 }
@@ -83,7 +94,7 @@ void QUIManager::ShowBodyPannel() {
     if (it != models.end()) {
         if (nullptr == ui_body) {
             ui_body = new QUIDashboard(it->second);
-            ui_body->setParent(gl_window, Qt::WindowType::Dialog);
+            ui_body->setParent(gl_widget, Qt::WindowType::Dialog);
             ui_body->Init();
             ui_body->setWindowTitle("Body Pannel");
         }
@@ -92,7 +103,7 @@ void QUIManager::ShowBodyPannel() {
             if (!isVisible) {
                 ui_body->show();
             }
-            const QPoint pos = this->gl_window->pos();
+            const QPoint pos = this->main_win->pos();
             ui_body->move(pos.x() + GL_WINDOW_WIDTH + 20, pos.y());
         }
     } else {
@@ -105,7 +116,7 @@ void QUIManager::ShowRightHandPannel() {
     if (it != models.end()) {
         if (nullptr == ui_right_hand) {
             ui_right_hand = new QUIDashboard(it->second);
-            ui_right_hand->setParent(gl_window, Qt::WindowType::Dialog);
+            ui_right_hand->setParent(gl_widget, Qt::WindowType::Dialog);
             ui_right_hand->Init();
             ui_right_hand->setWindowTitle("Right Hand Pannel");
         }
@@ -114,7 +125,7 @@ void QUIManager::ShowRightHandPannel() {
             if (!isVisible) {
                 ui_right_hand->show();
             }
-            const QPoint pos = this->gl_window->pos();
+            const QPoint pos = this->main_win->pos();
             ui_right_hand->move(pos.x() + GL_WINDOW_WIDTH + 40, pos.y() + 20);
         }
     } else {
@@ -127,7 +138,7 @@ void QUIManager::ShowLeftHandPannel() {
     if (it != models.end()) {
         if (nullptr == ui_left_hand) {
             ui_left_hand = new QUIDashboard(it->second);
-            ui_left_hand->setParent(gl_window, Qt::WindowType::Dialog);
+            ui_left_hand->setParent(gl_widget, Qt::WindowType::Dialog);
             ui_left_hand->Init();
             ui_left_hand->setWindowTitle("Left Hand Pannel");
         }
@@ -136,7 +147,7 @@ void QUIManager::ShowLeftHandPannel() {
             if (!isVisible) {
                 ui_left_hand->show();
             }
-            const QPoint pos = this->gl_window->pos();
+            const QPoint pos = this->main_win->pos();
             ui_left_hand->move(pos.x() + GL_WINDOW_WIDTH + 60, pos.y() + 40);
         }
     } else {
@@ -147,7 +158,7 @@ void QUIManager::ShowLeftHandPannel() {
 void QUIManager::ShowAnimPannel() {
     if (nullptr == ui_anim) {
         ui_anim = new QUIAnim(project_path_, models, this->signer);
-        ui_anim->setParent(gl_window, Qt::WindowType::Dialog);
+        ui_anim->setParent(gl_widget, Qt::WindowType::Dialog);
         ui_anim->Init();
     }
     if (nullptr != ui_anim) {
@@ -155,15 +166,15 @@ void QUIManager::ShowAnimPannel() {
         if (!isVisible) {
             ui_anim->show();
         }
-        const QPoint pos = this->gl_window->pos();
+        const QPoint pos = this->main_win->pos();
         ui_anim->move(pos.x(), pos.y() + ceil(GL_WINDOW_HEIGHT * 4 / 7));
     }
 }
 
 void QUIManager::ShowRenderImgPannel() {
     if (nullptr == ui_render_img) {
-        ui_render_img = new QUIRenderImg(project_path_, models, gl_window);
-        ui_render_img->setParent(gl_window, Qt::WindowType::Dialog);
+        ui_render_img = new QUIRenderImg(project_path_, models, gl_widget);
+        ui_render_img->setParent(gl_widget, Qt::WindowType::Dialog);
         ui_render_img->Init();
     }
     if (nullptr != ui_render_img) {
@@ -171,7 +182,7 @@ void QUIManager::ShowRenderImgPannel() {
         if (!isVisible) {
             ui_render_img->show();
         }
-        const QPoint pos = this->gl_window->pos();
+        const QPoint pos = this->main_win->pos();
         ui_render_img->move(pos.x(), pos.y() - 120);
     }
 }
@@ -197,7 +208,7 @@ void QUIManager::ShowPointCloudWindow(const std::string &file_path) {
 }
 
 void QUIManager::SetRendererState(const int &id, const bool &is_render) {
-    if (nullptr != gl_window) {
-        gl_window->SetRendererState(id, is_render);
+    if (nullptr != gl_widget) {
+        gl_widget->SetRendererState(id, is_render);
     }
 }

@@ -30,12 +30,7 @@ int main(int argc, char *argv[]) {
     // 动画
     signs::Signer signer(project_path);
 
-    ui::GLWindow window;
-    window.resize(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
-    window.SetProjectPath(project_path);
-
     ui::QUIManager::Instance().SetProjectPath(project_path);
-    ui::QUIManager::Instance().SetGLWindow(&window);
     ui::QUIManager::Instance().AddModel(body);
     ui::QUIManager::Instance().AddModel(right_hand);
     ui::QUIManager::Instance().AddModel(left_hand);
@@ -43,12 +38,6 @@ int main(int argc, char *argv[]) {
 
     ui::QUIManager::Instance().Init();
     ui::QUIManager::Instance().Show();
-
-    //signs::Glosses glosses;
-    //glosses.push_back(signs::LexicalItem("她")); // 168
-    //glosses.push_back(signs::LexicalItem("们")); // 370
-    //glosses.push_back(signs::LexicalItem("漂亮")); // 20
-    //a_signer.Animate(glosses);
 
     return app.exec();
 }
