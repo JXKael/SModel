@@ -7,7 +7,7 @@
 namespace ui {
 
 class ConvolutionRenderer : public GLRenderer {
-private:
+protected:
     struct Light {
         glm::vec3 Ia = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Id = glm::vec3(1.0f, 1.0f, 1.0f);

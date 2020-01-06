@@ -47,7 +47,7 @@ void QUIQuick::Init() {
     this->ConnectMapper();
     // 总的弹板设置
     this->setLayout(layout);
-    this->resize(520, 520);
+    this->resize(620, 536);
     this->setWindowTitle("Control Pannel");
 }
 

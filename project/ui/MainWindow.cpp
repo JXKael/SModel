@@ -42,9 +42,12 @@ void MainWindow::Init() {
     QMenu *render_menu = new QMenu("Render(&R)", menu_bar);
     menu_bar->addMenu(render_menu);
     // 窗口
-    QMenu *wind_menu = new QMenu("View(&V)", menu_bar);
-    wind_menu->addAction("Animation", this, SLOT(onOpenAnimation()), QKeySequence("Ctrl+9"));
-    menu_bar->addMenu(wind_menu);
+    QMenu *view_menu = new QMenu("View(&V)", menu_bar);
+    view_menu->addAction("Animation", this, SLOT(onOpenAnimation()), QKeySequence("Ctrl+9"));
+    menu_bar->addMenu(view_menu);
+    // 帮助
+    QMenu *help_menu = new QMenu("Help(&H)", menu_bar);
+    menu_bar->addMenu(help_menu);
 
     this->setCentralWidget(central_widget);
 }

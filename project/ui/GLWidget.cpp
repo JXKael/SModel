@@ -83,6 +83,7 @@ void GLWidget::SetRendererState(const int &id, const bool &is_render) {
 // OpenGL
 
 void GLWidget::initializeGL() {
+    initializeOpenGLFunctions();
     for (renderers_map::iterator it = renderers.begin(); it != renderers.end(); ++it) {
         it->second->InitializeGL();
     }

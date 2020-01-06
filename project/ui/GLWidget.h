@@ -5,6 +5,7 @@
 
 #include <QApplication>
 #include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 #include <QKeyEvent>
 #include <QMouseEvent>
 
@@ -31,7 +32,7 @@ const glm::vec3 kCameraCenter = glm::vec3(0, 100, 1200);
 const glm::vec3 kModelCenter_RenderHand = glm::vec3(0, 0, 123);
 const glm::vec3 kCameraCenter_RenderHand = glm::vec3(0, 0, 600);
 
-class GLWidget : public QOpenGLWidget {
+class GLWidget : public QOpenGLWidget, public QOpenGLFunctions {
     Q_OBJECT
 
 private:

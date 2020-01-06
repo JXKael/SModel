@@ -1,52 +1,18 @@
 ﻿#ifndef CONVOLUTION_RENDERER_FINGER_MASK_H
 #define CONVOLUTION_RENDERER_FINGER_MASK_H
 
-#include "GLRenderer.h"
-#include "model/ModelCtrl.h"
+#include "ConvolutionRendererMask.h"
 
 namespace ui {
 
-class ConvolutionRendererFingerMask : public GLRenderer {
-private:
-    struct Light {
-        glm::vec3 Ia = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 Id = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 Is = glm::vec3(1, 1, 1);
-        glm::vec3 position = glm::vec3(0.0f, 100.0f, 100.0f);
-    } light;
-
-    struct Material {
-        glm::vec3 ka = 0.65f * glm::vec3(0.9176, 0.7412, 0.6157);
-        glm::vec3 kd = 0.75f * glm::vec3(0.9176, 0.7412, 0.6157);
-        glm::vec3 ks = glm::vec3(0, 0, 0);
-        float p = 60.0f;
-    } material;
-
-    const smodel::ModelCtrl *model_;
-
-    std::string project_path_;
-
-    GLint window_left = 0;
-    GLint window_bottom = 0;
-    GLint window_width = 0;
-    GLint window_height = 0;
+class ConvolutionRendererFingerMask : public ConvolutionRendererMask {
 public:
     ConvolutionRendererFingerMask();
     ConvolutionRendererFingerMask(const std::string project_path, const smodel::ModelCtrl *model);
     ~ConvolutionRendererFingerMask();
-    void ResizeGL(int w, int h) override;
 
-    void Draw() override;
-
-    void PassVerticesToShader() override;
-    void PassVertexColorToShader() override;
-    void PassTexcoordToShader() override;
-    void PassMVPToShader() override;
-    void PassOtherToShader() override;
-    // Convolution渲染相关
-    void PassWindowToShader();
-    void PassRenderModelToShader();
-    void PassFingerMaskToShader();
+    // Mask渲染相关
+    void PassMaskToShader() override;
 
 private:
     void SpecialInit();

@@ -23,7 +23,7 @@ void ConvolutionRenderer::SpecialInit() {
         -1.0f,  1.0f, 0.0f,    0.0f, 1.0f,
          1.0f,  1.0f, 0.0f,    1.0f, 1.0f
     };
-    
+
     this->vertex_shader_ = QString((project_path_ + "/ui/shaders/model_vs.glsl").c_str());
     this->frag_shader_ = QString((project_path_ + "/ui/shaders/model_fs.glsl").c_str());
 
@@ -107,60 +107,48 @@ void ConvolutionRenderer::PassRenderModelToShader() {
     const smodel::Centers &centers = model_->GetCenters();
     const smodel::TangentPoints &tangent_points = model_->GetTangentPoints();
 
-    std::vector<glm::vec3> gl_centers;
-    std::vector<GLfloat> gl_radii;
-    std::vector<glm::ivec3> gl_blocks;
+    std::vector<QVector3D> qgl_centers;
+    std::vector<GLfloat> qgl_radii;
+    std::vector<QVector3D> qgl_blocks;
 
     for (const smodel::Center &center : centers) {
-        gl_centers.push_back(glm::vec3(center.position.x(), center.position.y(), center.position.z()));
-        gl_radii.push_back(center.radius);
+        qgl_centers.push_back(QVector3D(center.position.x(), center.position.y(), center.position.z()));
+        qgl_radii.push_back(center.radius);
     }
 
     for (const smodel::Block &block : blocks) {
-        gl_blocks.push_back(glm::ivec3(block.x(), block.y(), block.z()));
+        qgl_blocks.push_back(QVector3D(block.x(), block.y(), block.z()));
     }
 
-    size_t num_centers = gl_centers.size();
-    size_t num_blocks = gl_blocks.size();
+    size_t num_centers = centers.size();
+    size_t num_blocks = blocks.size();
     size_t num_tangents_points = tangent_points.size();
 
     shader_program.setUniformValue("num_centers", (GLint)num_centers);
     shader_program.setUniformValue("num_blocks", (GLint)num_blocks);
 
-    //shader_program.setUniformValueArray("centers", (GLfloat *)gl_centers.data(), num_centers, 3);
-    //shader_program.setUniformValueArray("radii", (GLfloat *)gl_radii.data(), num_centers, 1);
-    //shader_program.setUniformValueArray("blocks", (GLint *)gl_blocks.data(), num_blocks);
+    shader_program.setUniformValueArray("centers", qgl_centers.data(), (int)qgl_centers.size());
+    shader_program.setUniformValueArray("radii", qgl_radii.data(), (int)qgl_radii.size(), 1);
+    shader_program.setUniformValueArray("blocks", qgl_blocks.data(), (int)qgl_blocks.size());
 
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "centers"), (GLsizei)gl_centers.size(), (GLfloat *)gl_centers.data());
-    glUniform1fv(glGetUniformLocation(shader_program.programId(), "radii"), (GLsizei)gl_radii.size(), (GLfloat *)gl_radii.data());
-    glUniform3iv(glGetUniformLocation(shader_program.programId(), "blocks"), (GLsizei)gl_blocks.size(), (GLint *)gl_blocks.data());
-
-
-    std::vector<glm::vec3> tangents_v1 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
-    std::vector<glm::vec3> tangents_v2 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
-    std::vector<glm::vec3> tangents_v3 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
-    std::vector<glm::vec3> tangents_u1 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
-    std::vector<glm::vec3> tangents_u2 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
-    std::vector<glm::vec3> tangents_u3 = std::vector<glm::vec3>(num_tangents_points, glm::vec3(0, 0, 0));
+    std::vector<QVector3D> qtangents_v1 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
+    std::vector<QVector3D> qtangents_v2 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
+    std::vector<QVector3D> qtangents_v3 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
+    std::vector<QVector3D> qtangents_u1 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
+    std::vector<QVector3D> qtangents_u2 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
+    std::vector<QVector3D> qtangents_u3 = std::vector<QVector3D>(num_tangents_points, QVector3D(0, 0, 0));
     for (int i = 0; i < tangent_points.size(); i++) {
-        tangents_v1[i] = tangent_points[i].v1;
-        tangents_v2[i] = tangent_points[i].v2;
-        tangents_v3[i] = tangent_points[i].v3;
-        tangents_u1[i] = tangent_points[i].u1;
-        tangents_u2[i] = tangent_points[i].u2;
-        tangents_u3[i] = tangent_points[i].u3;
+        qtangents_v1[i] = QVector3D(tangent_points[i].v1.x, tangent_points[i].v1.y, tangent_points[i].v1.z);
+        qtangents_v2[i] = QVector3D(tangent_points[i].v2.x, tangent_points[i].v2.y, tangent_points[i].v2.z);
+        qtangents_v3[i] = QVector3D(tangent_points[i].v3.x, tangent_points[i].v3.y, tangent_points[i].v3.z);
+        qtangents_u1[i] = QVector3D(tangent_points[i].u1.x, tangent_points[i].u1.y, tangent_points[i].u1.z);
+        qtangents_u2[i] = QVector3D(tangent_points[i].u2.x, tangent_points[i].u2.y, tangent_points[i].u2.z);
+        qtangents_u3[i] = QVector3D(tangent_points[i].u3.x, tangent_points[i].u3.y, tangent_points[i].u3.z);
     }
-    //shader_program.setUniformValueArray("tangents_v1", (GLfloat *)tangents_v1.data(), tangents_v1.size(), 3);
-    //shader_program.setUniformValueArray("tangents_v2", (GLfloat *)tangents_v2.data(), tangents_v2.size(), 3);
-    //shader_program.setUniformValueArray("tangents_v3", (GLfloat *)tangents_v3.data(), tangents_v3.size(), 3);
-    //shader_program.setUniformValueArray("tangents_u1", (GLfloat *)tangents_u1.data(), tangents_u1.size(), 3);
-    //shader_program.setUniformValueArray("tangents_u2", (GLfloat *)tangents_u2.data(), tangents_u2.size(), 3);
-    //shader_program.setUniformValueArray("tangents_u3", (GLfloat *)tangents_u3.data(), tangents_u3.size(), 3);
-
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_v1"), (GLsizei)tangents_v1.size(), (GLfloat *)tangents_v1.data());
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_v2"), (GLsizei)tangents_v2.size(), (GLfloat *)tangents_v2.data());
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_v3"), (GLsizei)tangents_v3.size(), (GLfloat *)tangents_v3.data());
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_u1"), (GLsizei)tangents_u1.size(), (GLfloat *)tangents_u1.data());
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_u2"), (GLsizei)tangents_u2.size(), (GLfloat *)tangents_u2.data());
-    glUniform3fv(glGetUniformLocation(shader_program.programId(), "tangents_u3"), (GLsizei)tangents_u3.size(), (GLfloat *)tangents_u3.data());
+    shader_program.setUniformValueArray("tangents_v1", qtangents_v1.data(), (int)qtangents_v1.size());
+    shader_program.setUniformValueArray("tangents_v2", qtangents_v2.data(), (int)qtangents_v2.size());
+    shader_program.setUniformValueArray("tangents_v3", qtangents_v3.data(), (int)qtangents_v3.size());
+    shader_program.setUniformValueArray("tangents_u1", qtangents_u1.data(), (int)qtangents_u1.size());
+    shader_program.setUniformValueArray("tangents_u2", qtangents_u2.data(), (int)qtangents_u2.size());
+    shader_program.setUniformValueArray("tangents_u3", qtangents_u3.data(), (int)qtangents_u3.size());
 }

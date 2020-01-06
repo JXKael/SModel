@@ -24,26 +24,13 @@ const int num_centers = 38;
 
 uniform vec3 centers[num_centers];
 uniform float radii[num_centers];
-uniform ivec3 blocks[num_blocks];
+uniform vec3 blocks[num_blocks];
 uniform vec3 tangents_v1[num_blocks];
 uniform vec3 tangents_v2[num_blocks];
 uniform vec3 tangents_v3[num_blocks];
 uniform vec3 tangents_u1[num_blocks];
 uniform vec3 tangents_u2[num_blocks];
 uniform vec3 tangents_u3[num_blocks];
-
-// Lighting
-// uniform vec3 light_pos;
-// uniform vec3 Ia, Id, Is;
-
-// Material
-// uniform vec3 ka, kd, ks;
-// uniform float p;
-
-// Texture
-// uniform sampler2D synthetic_texture;
-// uniform sampler2D silhouette;
-// uniform sampler2D real_texture;
 
 uniform float mask_colors[num_blocks];
 
@@ -379,7 +366,7 @@ vec3 ray_model_intersection(vec3 p, vec3 d, inout vec3 min_normal, inout int blo
     }*/
 
     for (int j = j_start; j < j_end; j++) {
-        ivec3 block = blocks[j];
+        ivec3 block = (ivec3)blocks[j];
         if (block[2] < RAND_MAX) {
             c1 = centers[block[0]]; c2 = centers[block[1]]; c3 = centers[block[2]];
             r1 = radii[block[0]]; r2 = radii[block[1]]; r3 = radii[block[2]];
@@ -409,16 +396,7 @@ vec3 ray_model_intersection(vec3 p, vec3 d, inout vec3 min_normal, inout int blo
 }
 
 void main() {
-    // if (texture(silhouette, uv).r == 1.0) {
-    //     FragColor = vec4(1, 1, 1, 1);
-    //     gl_FragDepth = 1;
-    //     return;
-    // }
-    // retrieve block indices from the texture;
-    // int block_index = int(texture(silhouette, uv).r * 255);
     int block_index = -1;
-    // float difference = abs(block_index - texture(silhouette, uv).r * 255);
-    // if (difference > 0.00001 || block_index > num_blocks) block_index = -1;
 
     vec2 pixel = vec2(gl_FragCoord.x, gl_FragCoord.y);
     vec3 p1 = unproject(pixel[0], pixel[1], 0);
@@ -435,9 +413,6 @@ void main() {
         gl_FragDepth = 1;
         return;
     }
-
-    // vec3 color = compute_color_gouraud(i, normal);
-    // color = mix(texture(synthetic_texture, uv).rgb, color, vec3(0.38));
     float mask_color = mask_colors[block_index];
     FragColor = vec4(mask_color, mask_color, mask_color, 1.0f);
 

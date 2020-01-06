@@ -24,7 +24,7 @@ const int num_centers = 38;
 
 uniform vec3 centers[num_centers];
 uniform float radii[num_centers];
-uniform ivec3 blocks[num_blocks];
+uniform vec3 blocks[num_blocks];
 uniform vec3 tangents_v1[num_blocks];
 uniform vec3 tangents_v2[num_blocks];
 uniform vec3 tangents_v3[num_blocks];
@@ -377,7 +377,7 @@ vec3 ray_model_intersection(vec3 p, vec3 d, inout vec3 min_normal, inout int blo
     }*/
 
     for (int j = j_start; j < j_end; j++) {
-        ivec3 block = blocks[j];
+        ivec3 block = (ivec3)(blocks[j]);
         if (block[2] < RAND_MAX) {
             c1 = centers[block[0]]; c2 = centers[block[1]]; c3 = centers[block[2]];
             r1 = radii[block[0]]; r2 = radii[block[1]]; r3 = radii[block[2]];

@@ -13,13 +13,13 @@ GLRenderer::GLRenderer() : vbo(QGLBuffer::VertexBuffer) {
 GLRenderer::GLRenderer(const QString &vertex_shader, const QString &frag_shader)
   : vbo(QGLBuffer::VertexBuffer),
     vertex_shader_(vertex_shader),
-    frag_shader_(frag_shader)
+    frag_shader_(frag_shader),
+    model(glm::mat4x4(1.0f)),
+    view(glm::mat4x4(1.0f)),
+    projection(glm::mat4x4(1.0f)),
+    clear_color(glm::vec4(1.0f))
 {
-    model = glm::mat4x4(1.0f);
-    view = glm::mat4x4(1.0f);
-    projection = glm::mat4x4(1.0f);
 
-    clear_color = glm::vec4(1.0f);
 }
 
 GLRenderer::~GLRenderer() {
@@ -38,7 +38,6 @@ GLRenderer::~GLRenderer() {
 }
 
 void GLRenderer::InitializeGL() {
-    initializeOpenGLFunctions();
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
 

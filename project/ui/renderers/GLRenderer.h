@@ -18,7 +18,7 @@
 
 namespace ui {
 
-class GLRenderer : public QOpenGLFunctions {
+class GLRenderer {
 protected:
     // 着色器路径
     QString vertex_shader_;
