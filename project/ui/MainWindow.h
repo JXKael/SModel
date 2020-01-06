@@ -34,7 +34,12 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private Q_SLOTS:
+    void onOpenQuick();
+    void onOpenBody();
+    void onOpenRightHand();
+    void onOpenLeftHand();
     void onOpenAnimation();
+
 
 }; // class MainWindow
 

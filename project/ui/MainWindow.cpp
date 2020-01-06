@@ -12,7 +12,7 @@
 using namespace ui;
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) {
-    this->move(0, 0);
+    this->move(120, 120);
 }
 
 MainWindow::~MainWindow() {
@@ -43,6 +43,10 @@ void MainWindow::Init() {
     menu_bar->addMenu(render_menu);
     // 窗口
     QMenu *view_menu = new QMenu("View(&V)", menu_bar);
+    view_menu->addAction("Quick", this, SLOT(onOpenQuick()), QKeySequence("Ctrl+0"));
+    view_menu->addAction("Body", this, SLOT(onOpenBody()), QKeySequence("Ctrl+1"));
+    view_menu->addAction("Right Hand", this, SLOT(onOpenRightHand()), QKeySequence("Ctrl+2"));
+    view_menu->addAction("Left Hand", this, SLOT(onOpenLeftHand()), QKeySequence("Ctrl+3"));
     view_menu->addAction("Animation", this, SLOT(onOpenAnimation()), QKeySequence("Ctrl+9"));
     menu_bar->addMenu(view_menu);
     // 帮助
@@ -58,37 +62,52 @@ void MainWindow::SetGLWidget(GLWidget *gl_widget) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    switch (event->key()) {
-    case Qt::Key_0:
-        QUIManager::Instance().ShowQuickPannel();
-        break;
-    case Qt::Key_1:
-        QUIManager::Instance().ShowBodyPannel();
-        break;
-    case Qt::Key_2:
-        QUIManager::Instance().ShowRightHandPannel();
-        break;
-    case Qt::Key_3:
-        QUIManager::Instance().ShowLeftHandPannel();
-        break;
-    //case Qt::Key_4:
-        //this->ProcessImage();
-        //break;
-        //case Qt::Key_Up:
-        //    camera.ProcessMovement(kUDLR, glm::vec2(0, 100));
-        //    break;
-    //case Qt::Key_9:
-    //    QUIManager::Instance().ShowAnimPannel();
+    //switch (event->key()) {
+    //case Qt::Key_0:
+    //    QUIManager::Instance().ShowQuickPannel();
     //    break;
-    default:
-        break;
-    }
-    this->update();
+    //case Qt::Key_1:
+    //    QUIManager::Instance().ShowBodyPannel();
+    //    break;
+    //case Qt::Key_2:
+    //    QUIManager::Instance().ShowRightHandPannel();
+    //    break;
+    //case Qt::Key_3:
+    //    QUIManager::Instance().ShowLeftHandPannel();
+    //    break;
+    ////case Qt::Key_4:
+    //    //this->ProcessImage();
+    //    //break;
+    //    //case Qt::Key_Up:
+    //    //    camera.ProcessMovement(kUDLR, glm::vec2(0, 100));
+    //    //    break;
+    ////case Qt::Key_9:
+    ////    QUIManager::Instance().ShowAnimPannel();
+    ////    break;
+    //default:
+    //    break;
+    //}
+    //this->update();
 }
 
 /// 槽函数
 
+void MainWindow::onOpenQuick() {
+    QUIManager::Instance().ShowQuickPannel();
+}
+
+void MainWindow::onOpenBody() {
+    QUIManager::Instance().ShowBodyPannel();
+}
+
+void MainWindow::onOpenRightHand() {
+    QUIManager::Instance().ShowRightHandPannel();
+}
+
+void MainWindow::onOpenLeftHand() {
+    QUIManager::Instance().ShowLeftHandPannel();
+}
+
 void MainWindow::onOpenAnimation() {
     QUIManager::Instance().ShowAnimPannel();
 }
-
