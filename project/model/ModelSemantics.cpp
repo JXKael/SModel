@@ -23,6 +23,7 @@ void ModelSemantics::Init() {
     this->InitAttachmentCentersOffset();
 
     model_.MoveToInit();
+    model_.UpdateCentersPosition();
 }
 
 void ModelSemantics::InitTopology() {
@@ -95,7 +96,6 @@ void ModelSemantics::InitDofs() {
 }
 
 void ModelSemantics::InitBonesTransformMatrix() {
-    // model_.MoveToInit();
     model_.Move(Thetas(model_.DofsSize(), 0));
 }
 

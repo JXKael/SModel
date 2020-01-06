@@ -36,9 +36,8 @@ private:
     models_map &models_;
     signs::Signer *signer_;
 
-    std::map<std::string, std::map<int, smodel::Thetas>> keypoints;
-
     // animation
+    std::map<std::string, std::map<int, smodel::Thetas>> keypoints;
     const int fps = 60;
     int max_frame;
     int curr_frame;
@@ -49,10 +48,10 @@ private:
     QLineEdit *edit_currframe;
     QLineEdit *edit_fps;
     QPushButton *btn_play;
-    QPushButton *btn_stop;
+    // QPushButton *btn_stop;
     std::map<std::string, QSlider *> sliders;
-    QLineEdit *file_path;
-    QLineEdit *file_name;
+    QLineEdit *edit_file_path;
+    QLineEdit *edit_file_name;
     // 滑动框
     QWidget *scroll_content;
     QGridLayout *scroll_layout;
@@ -92,6 +91,7 @@ private Q_SLOTS:
     void onClickBtnSave();
     void onClickSignsBtn(const int &id);
     void onClickBtnPlaySentence();
+    void onClickBtnClear();
 };
 // class QUIAnim
 

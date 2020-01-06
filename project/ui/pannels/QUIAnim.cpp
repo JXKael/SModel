@@ -100,7 +100,7 @@ QHBoxLayout *QUIAnim::InitHead() {
     connect(btn_play, SIGNAL(pressed()), this, SLOT(onClickPlay()));
 
     // 停止播放按钮
-    this->btn_stop = new QPushButton();
+    QPushButton *btn_stop = new QPushButton();
     btn_stop->setFixedWidth(SINGLE_BTN_WIDTH);
     btn_stop->setFixedHeight(SINGLE_LINE_HEIGHT);
     btn_stop->setText("stop");
@@ -170,18 +170,18 @@ QHBoxLayout *QUIAnim::InitOperation() {
     QHBoxLayout *layout = new QHBoxLayout();
     layout->setAlignment(Qt::AlignLeft);
     // 文件路径
-    file_path = new QLineEdit();
-    file_path->setFocusPolicy(Qt::ClickFocus);
-    file_path->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
-    file_path->setFixedHeight(SINGLE_LINE_HEIGHT);
-    file_path->setText(QString("%1/data/signs/sign_data/").arg(project_path_.c_str()));
+    edit_file_path = new QLineEdit();
+    edit_file_path->setFocusPolicy(Qt::ClickFocus);
+    edit_file_path->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
+    edit_file_path->setFixedHeight(SINGLE_LINE_HEIGHT);
+    edit_file_path->setText(QString("%1/data/signs/sign_data/").arg(project_path_.c_str()));
 
     // 文件名称
-    file_name = new QLineEdit();
-    file_name->setFocusPolicy(Qt::ClickFocus);
-    file_name->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH / 4);
-    file_name->setFixedHeight(SINGLE_LINE_HEIGHT);
-    file_name->setPlaceholderText("sign id");
+    edit_file_name = new QLineEdit();
+    edit_file_name->setFocusPolicy(Qt::ClickFocus);
+    edit_file_name->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH / 4);
+    edit_file_name->setFixedHeight(SINGLE_LINE_HEIGHT);
+    edit_file_name->setPlaceholderText("sign id");
 
     // 保存按钮
     QPushButton *btn_save = new QPushButton();
@@ -193,7 +193,7 @@ QHBoxLayout *QUIAnim::InitOperation() {
 
     // 一句话
     QLineEdit *edit_sentence = new QLineEdit();
-    edit_sentence->setFocusPolicy(Qt::ClickFocus);
+    edit_sentence->setFocusPolicy(Qt::NoFocus);
     edit_sentence->setFixedWidth(ADJUST_OPERATIONG_BTN_WIDTH);
     edit_sentence->setFixedHeight(SINGLE_LINE_HEIGHT);
     edit_sentence->setPlaceholderText("edit sentence");
@@ -206,12 +206,21 @@ QHBoxLayout *QUIAnim::InitOperation() {
     btn_play->setFixedHeight(SINGLE_LINE_HEIGHT);
     connect(btn_play, SIGNAL(pressed()), this, SLOT(onClickBtnPlaySentence()));
 
-    layout->addWidget(file_path);
-    layout->addWidget(file_name);
+    // 清空
+    QPushButton *btn_clear = new QPushButton();
+    btn_clear->setText("CLEAR!!");
+    btn_clear->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    btn_clear->setFixedWidth(SINGLE_BTN_WIDTH);
+    btn_clear->setFixedHeight(SINGLE_LINE_HEIGHT);
+    connect(btn_clear, SIGNAL(pressed()), this, SLOT(onClickBtnClear()));
+
+    layout->addWidget(edit_file_path);
+    layout->addWidget(edit_file_name);
     layout->addWidget(btn_save);
     layout->addStretch();
     layout->addWidget(edit_sentence);
     layout->addWidget(btn_play);
+    layout->addWidget(btn_clear);
 
     return layout;
 }
@@ -432,8 +441,8 @@ void QUIAnim::updateTimer() {
 }
 
 void QUIAnim::onClickBtnSave() {
-    if (!file_path->text().isEmpty() && !file_name->text().isEmpty()) {
-        const std::string file = (file_path->text() + file_name->text()).toStdString();
+    if (!edit_file_path->text().isEmpty() && !edit_file_name->text().isEmpty()) {
+        const std::string file = (edit_file_path->text() + edit_file_name->text()).toStdString();
         std::map<std::string, std::map<int, smodel::Thetas>>::iterator it = keypoints.begin();
         int max = -1;
         int min = max_frame;
@@ -553,4 +562,17 @@ void QUIAnim::onClickBtnPlaySentence() {
     this->UpdateModel();
     this->UpdateGL();
     this->onClickPlay();
+}
+
+void QUIAnim::onClickBtnClear() {
+    QMessageBox::StandardButton res = QMessageBox::question(this, tr("Question"), tr("Clear animation?"), QMessageBox::Yes | QMessageBox::Cancel);
+    if (res == QMessageBox::Yes) {
+        keypoints.clear();
+        this->curr_frame = 0;
+        edit_currframe->setText(QString("%1").arg(curr_frame));
+        this->onCurrFrameEditingFinished();
+
+        this->UpdateModel();
+        this->UpdateGL();
+    }
 }
