@@ -341,7 +341,7 @@ const smodel::Thetas QUIAnim::calcThetas(const std::string &name, const int &cur
 
 
 void QUIAnim::ConverSignDataToKeypoints(signs::SignData &sign_data, const int &start) {
-    int frame_count = (int)sign_data.FrameCount();
+    signs::Frame frame_count = sign_data.FrameCount();
     for (signs::Frame i = 0; i < frame_count; ++i) {
         models_map::iterator it = models_.begin();
         while (it != models_.end()) {

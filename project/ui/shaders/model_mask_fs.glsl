@@ -18,7 +18,7 @@ uniform mat4 view;
 uniform mat4 projection;
 
 //HModel with wrist
-const int num_blocks = 30;
+const int num_blocks = 40;
 const int num_centers = 38;
 
 uniform vec3 centers[num_centers];

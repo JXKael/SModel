@@ -6,8 +6,7 @@ GLRenderer::GLRenderer()
   : vbo(QGLBuffer::VertexBuffer),
     model(glm::mat4x4(1.0f)),
     view(glm::mat4x4(1.0f)),
-    projection(glm::mat4x4(1.0f)),
-    clear_color(glm::vec4(1.0f)) {}
+    projection(glm::mat4x4(1.0f)) {}
 
 GLRenderer::GLRenderer(const QString &vertex_shader, const QString &frag_shader)
   : vertex_shader_(vertex_shader),
@@ -15,8 +14,7 @@ GLRenderer::GLRenderer(const QString &vertex_shader, const QString &frag_shader)
     vbo(QGLBuffer::VertexBuffer),
     model(glm::mat4x4(1.0f)),
     view(glm::mat4x4(1.0f)),
-    projection(glm::mat4x4(1.0f)),
-    clear_color(glm::vec4(1.0f)) {}
+    projection(glm::mat4x4(1.0f)) {}
 
 GLRenderer::~GLRenderer() {
     this->ClearVertices();

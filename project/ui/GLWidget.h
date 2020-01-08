@@ -28,7 +28,7 @@
 namespace ui {
 
 const glm::vec3 kModelCenter = glm::vec3(0, 0, 0);
-const glm::vec3 kCameraCenter = glm::vec3(0, 100, 1200);
+const glm::vec3 kCameraCenter = glm::vec3(-300, 200, 1400);
 const glm::vec3 kModelCenter_RenderHand = glm::vec3(0, 0, 123);
 const glm::vec3 kCameraCenter_RenderHand = glm::vec3(0, 0, 600);
 

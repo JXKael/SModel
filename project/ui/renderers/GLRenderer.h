@@ -24,9 +24,6 @@ protected:
     QString vertex_shader_;
     QString frag_shader_;
 
-    // 背景颜色
-    glm::vec4 clear_color;
-
     // 渲染
     QOpenGLVertexArrayObject vao;
     QOpenGLShaderProgram shader_program;
@@ -59,8 +56,8 @@ public:
     inline void SetModel(glm::mat4 model) { this->model = model; }
     inline void SetView(glm::mat4 view) { this->view = view; }
     inline void SetProjection(glm::mat4 projection) { this->projection = projection; }
-    inline void SetClearColor(glm::vec4 color) { this->clear_color = color; }
-    inline void SetClearColor(float r, float g, float b, float a) { this->clear_color = glm::vec4(r, g, b, a); }
+    //inline void SetClearColor(glm::vec4 color) { this->clear_color = color; }
+    //inline void SetClearColor(float r, float g, float b, float a) { this->clear_color = glm::vec4(r, g, b, a); }
     inline void SetRenderMode(GLenum mode) { this->render_mode = mode; }
     inline void SetName(const std::string &name) { this->name = name; }
     inline const std::string &GetName() const { return name; }

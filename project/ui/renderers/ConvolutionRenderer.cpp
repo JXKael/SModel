@@ -27,7 +27,6 @@ void ConvolutionRenderer::SpecialInit() {
     this->vertex_shader_ = QString((project_path_ + "/ui/shaders/model_vs.glsl").c_str());
     this->frag_shader_ = QString((project_path_ + "/ui/shaders/model_fs.glsl").c_str());
 
-    this->SetClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     this->SetRenderMode(GL_TRIANGLE_STRIP);
     this->SetVertices(convolution_vertices);
     this->AddTexture("synthetic_texture", (project_path_ + "/ui/shaders/skin_texture.png").c_str());
