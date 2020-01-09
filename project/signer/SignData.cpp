@@ -74,14 +74,15 @@ bool SignData::IsValid() {
     return this->FrameCount() > 0 && id >= 0;
 }
 
+// TO DO
 FrameParams SignData::GetParams(const std::string &model_name, const Frame &frame) {
     if (model_name == "body") {
         return GetBodyParams(frame);
     }
-    else if (model_name == "right_hand") {
+    else if (model_name == "right-hand") {
         return GetRightHandParams(frame);
     }
-    else if (model_name == "left_hand") {
+    else if (model_name == "left-hand") {
         return GetLeftHandParams(frame);
     }
     else {
@@ -106,4 +107,3 @@ FrameParams SignData::GetLeftHandParams(const Frame &frame) {
     res.insert(res.end(), params[frame].begin() + 23 + 26, params[frame].end());
     return res;
 }
-

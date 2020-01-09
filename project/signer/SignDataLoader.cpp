@@ -55,7 +55,7 @@ const std::string SignDataLoader::GetGlossesMapFilePath() {
 void SignDataLoader::ReloadSignsDir() {
     std::string data_root = GetDataRoot();
 
-    std::vector<std::string> files = utils::listFiles(data_root.c_str());
+    std::vector<std::string> files = utils::list_files(data_root.c_str());
     if (files.size() <= 0) {
         std::cout << "--> Warning: nothing in [" << data_root << "]" << std::endl;
         signs_dir.clear();

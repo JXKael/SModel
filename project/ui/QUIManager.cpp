@@ -26,6 +26,15 @@ void QUIManager::Init() {
     main_win->Init();
     main_win->resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT);
 
+    // TO DO
+    smodel::ComposedModels &com_models = models_mgr->GetAllModels();
+    smodel::ModelCtrlMap &model_ctrls = com_models["SLModel"];
+    smodel::ModelCtrlMap::iterator it = model_ctrls.begin();
+    while (it != model_ctrls.end()) {
+        this->models[it->second->GetName()] = it->second;
+        it++;
+    }
+
     this->gl_widget = new GLWidget();
     gl_widget->SetProjectPath(project_path_);
     gl_widget->SetupRenderers(models);
@@ -57,20 +66,16 @@ const int &QUIManager::GetSelectedCenterId() const {
 }
 
 smodel::ModelCtrl *QUIManager::GetModel(const std::string &name) {
-    models_map::iterator it = models.find(name);
+    smodel::models_map::iterator it = models.find(name);
     return it != models.end() ? it->second : nullptr;
 }
 
-models_map &QUIManager::GetModels() {
+smodel::models_map &QUIManager::GetModels() {
     return models;
 }
 
 QUIQuick *QUIManager::GetUIQuick() {
     return ui_quick;
-}
-
-void QUIManager::SetSigner(signs::Signer &signer) {
-    this->signer = &signer;
 }
 
 void QUIManager::ShowQuickPannel() {
@@ -90,7 +95,7 @@ void QUIManager::ShowQuickPannel() {
 }
 
 void QUIManager::ShowBodyPannel() {
-    models_map::iterator it = models.find(BODY);
+    smodel::models_map::iterator it = models.find(BODY);
     if (it != models.end()) {
         if (nullptr == ui_body) {
             ui_body = new QUIDashboard(it->second);
@@ -112,7 +117,7 @@ void QUIManager::ShowBodyPannel() {
 }
 
 void QUIManager::ShowRightHandPannel() {
-    models_map::iterator it = models.find(RIGHT_HAND);
+    smodel::models_map::iterator it = models.find(RIGHT_HAND);
     if (it != models.end()) {
         if (nullptr == ui_right_hand) {
             ui_right_hand = new QUIDashboard(it->second);
@@ -134,7 +139,7 @@ void QUIManager::ShowRightHandPannel() {
 }
 
 void QUIManager::ShowLeftHandPannel() {
-    models_map::iterator it = models.find(LEFT_HAND);
+    smodel::models_map::iterator it = models.find(LEFT_HAND);
     if (it != models.end()) {
         if (nullptr == ui_left_hand) {
             ui_left_hand = new QUIDashboard(it->second);

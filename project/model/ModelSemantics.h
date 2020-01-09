@@ -7,12 +7,12 @@ namespace smodel {
 
 class ModelSemantics {
 protected:
-    Model &model_;
+    Model *model_;
     Centers &centers_;
     Bones &bones_;
     Dofs &dofs_;
 public:
-    ModelSemantics(Model &model);
+    ModelSemantics(Model *model);
     ~ModelSemantics();
 
     void Init();
@@ -26,6 +26,6 @@ public:
     void InitAttachmentCentersOffset();
 };
 
-}
+} // namespace smodel
 
 #endif // MODEL_SEMANTICS_H

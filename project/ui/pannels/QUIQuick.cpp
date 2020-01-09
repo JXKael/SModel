@@ -3,7 +3,7 @@
 
 using namespace ui;
 
-QUIQuick::QUIQuick(const std::string &project_path, models_map &models, renderers_map &renderers, renderers_state_map &renderers_state)
+QUIQuick::QUIQuick(const std::string &project_path, smodel::models_map &models, renderers_map &renderers, renderers_state_map &renderers_state)
   : project_path_(project_path),
     models_(models),
     renderers_(renderers),
@@ -62,7 +62,7 @@ QVBoxLayout *QUIQuick::InitCheckBoxes() {
     layout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     // 模型按钮
-    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+    for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
         const std::string &name = it->first;
         QPushButton *btn = new QPushButton();
         QString btn_text = sel_model_name == name ? QString("%1 >>").arg(name.c_str()) : QString("%1").arg(name.c_str());
@@ -210,10 +210,10 @@ void QUIQuick::UpdateQuickScrollContent(const std::string &model_name) {
 
 void QUIQuick::LoadQuickThetas(const std::string &model_name) {
     quick_thetas.clear();
-
-    models_map::iterator it = models_.find(model_name);
+    smodel::models_map::iterator it = models_.find(model_name);
     if (it != models_.end()) {
         try {
+            // TO DO, 不应该用model_name索引
             csv::CSVReader<3> centers_csv(project_path_ + "/data/" + model_name + "/thetas.csv");
             centers_csv.read_header(csv::ignore_extra_column, "id", "thetas", "mask");
             std::string id, thetas_s;
@@ -301,7 +301,7 @@ void QUIQuick::onModelBtnClick(const QString &name) {
 }
 
 void QUIQuick::onQuickBtnClick(int id) {
-    models_map::iterator it = models_.find(this->sel_model_name);
+    smodel::models_map::iterator it = models_.find(this->sel_model_name);
     if (it != models_.end()) {
         model_pose[sel_model_name] = quick_thetas[id].first;
         const smodel::Thetas &thetas = quick_thetas[id].second;
@@ -366,7 +366,7 @@ void QUIQuick::onClickBtnSave() {
 }
 
 void QUIQuick::onClickBtnReset() {
-    models_map::iterator it = models_.find(this->sel_model_name);
+    smodel::models_map::iterator it = models_.find(this->sel_model_name);
     if (it != models_.end()) {
         it->second->MoveToInit();
         it->second->Update();

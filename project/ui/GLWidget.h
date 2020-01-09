@@ -52,7 +52,7 @@ public:
     GLWidget(QWidget *parent = nullptr);
     ~GLWidget();
 
-    void SetupRenderers(models_map &models);
+    void SetupRenderers(smodel::models_map &models);
     void ClearRenderer();
     void SetRendererState(const int &id, const bool &is_render);
     inline renderers_map &GetRenderers() { return renderers; }

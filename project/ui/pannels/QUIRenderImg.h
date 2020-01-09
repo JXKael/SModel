@@ -25,12 +25,12 @@ class QUIRenderImg : public QDialog {
     Q_OBJECT
 public:
     explicit QUIRenderImg(QWidget *patent = 0);
-    QUIRenderImg(const std::string &project_path, models_map &models, GLWidget *gl_widget);
+    QUIRenderImg(const std::string &project_path, smodel::models_map &models, GLWidget *gl_widget);
     ~QUIRenderImg();
 
 private:
     const std::string project_path_;
-    models_map &models_;
+    smodel::models_map &models_;
     GLWidget *gl_widget_;
 
     QLineEdit *file_path;

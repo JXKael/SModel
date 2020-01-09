@@ -2,64 +2,73 @@
 
 using namespace smodel;
 
-ModelCtrl::ModelCtrl() : name_("model"), project_path_(""), mask_val_(0) {
-    config_loader = new ModelConfigLoader();
-    semantics = new ModelSemantics(model);
-    parent_bone_id_ = -1;
-    selected_centerid = -1;
+//ModelCtrl::ModelCtrl() : name_("model"), mask_val_(0) {
+//    //config_loader = new ModelConfigLoader();
+//    //semantics_ = new ModelSemantics(model);
+//    parent_bone_id_ = -1;
+//    selected_centerid = -1;
+//}
+
+ModelCtrl::ModelCtrl(const int& id, const std::string &name, const std::string &data_dir, const int &parent_id, const int &to_boneid)
+  : id_(id),
+    name_(name),
+    data_dir_(data_dir),
+    parent_id_(parent_id),
+    parent_bone_id_(to_boneid),
+    model(nullptr),
+    parent_(nullptr),
+    selected_centerid(-1),
+    mask_val_(-1)
+{
+
 }
 
-ModelCtrl::ModelCtrl(const std::string &project_path): name_("model"), project_path_(project_path), mask_val_(0) {
-    config_loader = new ModelConfigLoader();
-    semantics = new ModelSemantics(model);
-    parent_bone_id_ = -1;
-    selected_centerid = -1;
-}
+//ModelCtrl::ModelCtrl(const std::string &project_path): name_("model"), mask_val_(0) {
+//    //config_loader = new ModelConfigLoader();
+//    //semantics_ = new ModelSemantics(model);
+//    parent_bone_id_ = -1;
+//    selected_centerid = -1;
+//}
 
-ModelCtrl::ModelCtrl(const std::string &name, const std::string &project_path) : name_(name), project_path_(project_path), mask_val_(0) {
-    config_loader = new ModelConfigLoader();
-    semantics = new ModelSemantics(model);
-    parent_bone_id_ = -1;
-    selected_centerid = -1;
-}
+//ModelCtrl::ModelCtrl(const std::string &name, const std::string &project_path) : name_(name), mask_val_(0) {
+//    //config_loader = new ModelConfigLoader();
+//    //semantics_ = new ModelSemantics(model);
+//    parent_bone_id_ = -1;
+//    selected_centerid = -1;
+//}
 
 ModelCtrl::~ModelCtrl() {
-    model.Clear();
+    model->Clear();
+    if (nullptr != model) delete model;
+    model = nullptr;
 
-    if (nullptr != config_loader)
-        delete config_loader;
-    config_loader = nullptr;
+    //if (nullptr != config_loader)
+    //    delete config_loader;
+    //config_loader = nullptr;
 
-    if (nullptr != semantics)
-        delete semantics;
-    semantics = nullptr;
+    //if (nullptr != semantics_)
+    //    delete semantics_;
+    //semantics_ = nullptr;
 
     children_.clear();
 }
 
 void ModelCtrl::Init() {
-    model.Clear();
-    model.centers = config_loader->LoadCenters(project_path_ + "/data/" + name_ + "/centers.csv");
-    model.bones = config_loader->LoadBones(project_path_ + "/data/" + name_ + "/bones.csv");
-    model.blocks = config_loader->LoadBlocks(project_path_ + "/data/" + name_ + "/blocks.csv");
-    model.block_colors = config_loader->LoadBlockColors(project_path_ + "/data/" + name_ + "/blocks.csv");
-    model.dofs = config_loader->LoadDofs(project_path_ + "/data/" + name_ + "/dofs.csv");
-
     semantics->Init();
 }
 
 void ModelCtrl::MoveToInit() {
-    model.MoveToInit();
+    model->MoveToInit();
     MoveChildren();
 }
 
 void ModelCtrl::Move(const smodel::Thetas &thetas) {
-    model.Move(thetas);
+    model->Move(thetas);
     MoveChildren();
 }
 
 void ModelCtrl::Move(const Bone &parent_bone) {
-    model.Move(parent_bone);
+    model->Move(parent_bone);
     MoveChildren();
 }
 
@@ -73,7 +82,7 @@ void ModelCtrl::MoveChildren() {
 }
 
 void ModelCtrl::Update() {
-    model.UpdateCentersPosition();
+    model->UpdateCentersPosition();
     UpdateChildren();
 }
 
@@ -104,16 +113,18 @@ Bone ModelCtrl::GetRootBone() const {
     return GetBone(ROOT_NAME);
 }
 
-void ModelCtrl::AddChild(ModelCtrl &child, const int to_boneid) {
-    if (to_boneid >= 0 && to_boneid < model.bones.size()) {
-        this->children_.push_back(&child);
-        child.parent_ = this;
-        child.parent_bone_id_ = to_boneid;
-        child.GetModel().SetHasParent(true);
+void ModelCtrl::AddChild(ModelCtrl *child, const int to_boneid) {
+    if (to_boneid >= 0 && to_boneid < model->bones.size()) {
+        this->children_.push_back(child);
+        child->parent_ = this;
+        child->GetModel()->SetHasParent(true);
 
         const Bone &parent_bone = this->GetBone(to_boneid);
-        child.Move(parent_bone);
-        child.Update();
+        child->Move(parent_bone);
+        child->Update();
+    }
+    else {
+        std::cout << "### [error]: the id [" << to_boneid << "] of the bone is illegal." << std::endl;
     }
 }
 

@@ -5,10 +5,6 @@ using namespace smodel;
 Model::Model() : camera_ray(0, 0, 1),  has_parent(false) {
 }
 
-Model::Model(const std::string &name) : camera_ray(0, 0, 1), has_parent(false) {
-
-}
-
 Model::Model(const smodel::Model &model) {
     this->camera_ray = model.camera_ray;
 

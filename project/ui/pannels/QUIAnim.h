@@ -28,12 +28,12 @@ class QUIAnim : public QDialog {
     Q_OBJECT
 public:
     explicit QUIAnim(QWidget *patent = 0);
-    QUIAnim(const std::string &project_path, models_map &models, signs::Signer *signer);
+    QUIAnim(const std::string &project_path, smodel::models_map &models, signs::Signer *signer);
     ~QUIAnim();
 
 private:
     const std::string project_path_;
-    models_map &models_;
+    smodel::models_map &models_;
     signs::Signer *signer_;
 
     // animation

@@ -10,7 +10,7 @@ Signer::Signer(const std::string &project_path): project_path_(project_path) {
     this->init_data_loader();
 }
 
-Signer::Signer(const std::string &project_path, models_map &models)
+Signer::Signer(const std::string &project_path, smodel::models_map &models)
   : project_path_(project_path),
     models_(models)
 {
@@ -18,7 +18,7 @@ Signer::Signer(const std::string &project_path, models_map &models)
 }
 
 void Signer::init_data_loader() {
-    std::unique_ptr<SignDataLoader> sign_data_loader(new SignDataLoader("E:/Code/GitHub/SModel/project/data/signs"));
+    std::unique_ptr<SignDataLoader> sign_data_loader(new SignDataLoader(project_path_ + "/data/signs"));
     sign_loader = std::move(sign_data_loader);
 }
 

@@ -9,6 +9,8 @@
 #include "pannels/QUIQuick.h"
 #include "pannels/QUIRenderImg.h"
 #include "pannels/QUIPointCloud.h"
+
+#include "../model/ModelsManager.h"
 #include "../signer/Signer.h"
 
 namespace ui {
@@ -34,10 +36,11 @@ private:
     std::string name;
     int center_id;
 
-    models_map models;
+    smodel::models_map models;
     std::string project_path_;
 
     signs::Signer *signer;
+    smodel::ModelsManager *models_mgr;
 
 private:
     QUIManager();
@@ -55,11 +58,13 @@ public:
     void SetProjectPath(const std::string &path) { this->project_path_ = path; }
     inline void AddModel(smodel::ModelCtrl &model) { models[model.GetName()] = &model; }
     smodel::ModelCtrl *GetModel(const std::string &name);
-    models_map &GetModels();
+    smodel::models_map &GetModels();
     inline GLWidget *GetGLWindow() const { return gl_widget; }
     QUIQuick *GetUIQuick();
 
-    void SetSigner(signs::Signer &signer);
+    inline const smodel::ModelsManager *GetModelsMgr() const { return this->models_mgr; }
+    inline void SetModelsMgr(smodel::ModelsManager &models_mgr) { this->models_mgr = &models_mgr; }
+    inline void SetSigner(signs::Signer &signer) { this->signer = &signer; }
     inline const signs::Signer *GetSigner() const { return this->signer; }
 
 public:

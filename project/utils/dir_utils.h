@@ -7,8 +7,11 @@
 
 namespace utils {
 
-static std::vector<std::string> listFiles(const char *dir) {
-    std::vector<std::string> names;
+using FileName = std::string;
+using FilesList = std::vector<FileName>;
+
+static FilesList list_files(const char *dir) {
+    FilesList names;
     char dirNew[200];
     strcpy(dirNew, dir);
     strcat(dirNew, "\\*.*");    // 在目录后面加上"\\*.*"进行第一次搜索
@@ -32,7 +35,7 @@ static std::vector<std::string> listFiles(const char *dir) {
             strcat(dirNew, "\\");
             strcat(dirNew, findData.name);
 
-            listFiles(dirNew);
+            list_files(dirNew);
         } else {
             names.push_back(findData.name);
             // std::cout << findData.name << "\t" << findData.size << " bytes.\n";
@@ -41,6 +44,14 @@ static std::vector<std::string> listFiles(const char *dir) {
 
     _findclose(handle);    // 关闭搜索句柄
     return names;
+}
+
+static std::string get_data_dir(const std::string &project_dir) {
+    return project_dir + "data/";
+}
+
+static std::string get_models_dir(const std::string &project_dir) {
+    return get_data_dir(project_dir) + "models/";
 }
 
 } // namespace utils

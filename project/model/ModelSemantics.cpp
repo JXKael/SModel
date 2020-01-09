@@ -2,11 +2,11 @@
 
 using namespace smodel;
 
-ModelSemantics::ModelSemantics(Model &model)
+ModelSemantics::ModelSemantics(Model *model)
   : model_(model),
-    centers_(model_.centers),
-    bones_(model_.bones),
-    dofs_(model_.dofs)
+    centers_(model_->centers),
+    bones_(model_->bones),
+    dofs_(model_->dofs)
 {
 
 }
@@ -16,14 +16,14 @@ ModelSemantics::~ModelSemantics() {}
 void ModelSemantics::Init() {
     this->InitTopology();
 
-    model_.ReindexBlocksByCenterRadii();
-    model_.ComputeTangentPoints();
+    model_->ReindexBlocksByCenterRadii();
+    model_->ComputeTangentPoints();
 
     this->InitBonesTransformMatrix();
     this->InitAttachmentCentersOffset();
 
-    model_.MoveToInit();
-    model_.UpdateCentersPosition();
+    model_->MoveToInit();
+    model_->UpdateCentersPosition();
 }
 
 void ModelSemantics::InitTopology() {
@@ -92,11 +92,11 @@ void ModelSemantics::InitDofs() {
             dof.bone = &bones_[dof.bone_id];
         }
     }
-    model_.theta.resize(dofs_.size());
+    model_->theta.resize(dofs_.size());
 }
 
 void ModelSemantics::InitBonesTransformMatrix() {
-    model_.Move(Thetas(model_.DofsSize(), 0));
+    model_->Move(Thetas(model_->DofsSize(), 0));
 }
 
 void ModelSemantics::InitAttachmentCentersOffset() {

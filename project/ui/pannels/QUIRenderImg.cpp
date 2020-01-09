@@ -5,7 +5,7 @@ using namespace ui;
 
 smodel::Thetas convertToThetas(const std::string &thetas_s);
 
-QUIRenderImg::QUIRenderImg(const std::string &project_path, models_map &models, GLWidget *gl_widget)
+QUIRenderImg::QUIRenderImg(const std::string &project_path, smodel::models_map &models, GLWidget *gl_widget)
   : project_path_(project_path),
     models_(models),
     gl_widget_(gl_widget)
@@ -223,7 +223,7 @@ void QUIRenderImg::onClickBtnOneForAll() {
                                           "ZH", "CH", "SH", "NG" };
     QUIQuick *ui_quick = QUIManager::Instance().GetUIQuick();
     if (nullptr != ui_quick) {
-        for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
             const std::string &model_name = it->first;
             smodel::ModelCtrl *model_ctrl = it->second;
             loadQuickThetas(project_path_, model_name, model_ctrl);
@@ -235,7 +235,7 @@ void QUIRenderImg::onClickBtnOneForAll() {
         for (const std::string &pose_name : all_pose) {
             std::cout << "--> About to render [" << std::setw(2) << pose_name << "] ----------------------------------------------" << std::endl;
             bool failure = true;
-            for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+            for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
                 const std::string &model_name = it->first;
                 quick_thetas_list &quick_thetas = pose_thetas_map[model_name];
                 for (const quick_theta_pair &theta_pair : quick_thetas) {
@@ -270,7 +270,7 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
                                           "ZH", "CH", "SH", "NG" };
     QUIQuick *ui_quick = QUIManager::Instance().GetUIQuick();
     if (nullptr != ui_quick) {
-        for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
             const std::string &model_name = it->first;
             smodel::ModelCtrl *model_ctrl = it->second;
             loadQuickThetas(project_path_, model_name, model_ctrl);
@@ -286,7 +286,7 @@ void QUIRenderImg::onClickBtnOneForAllMask() {
         for (const std::string &pose_name : all_pose) {
             std::cout << "--> About to render [" << std::setw(2) << pose_name << "] ----------------------------------------------" << std::endl;
             bool failure = true;
-            for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+            for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
                 const std::string &model_name = it->first;
                 quick_thetas_list &quick_thetas = pose_thetas_map[model_name];
                 quick_mask_list &quick_mask = pose_mask_map[model_name];
@@ -326,7 +326,7 @@ void QUIRenderImg::onClickBtnOneForAllFingerMask() {
                                           "ZH", "CH", "SH", "NG" };
     QUIQuick *ui_quick = QUIManager::Instance().GetUIQuick();
     if (nullptr != ui_quick) {
-        for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+        for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
             const std::string &model_name = it->first;
             smodel::ModelCtrl *model_ctrl = it->second;
             loadQuickThetas(project_path_, model_name, model_ctrl);
@@ -342,7 +342,7 @@ void QUIRenderImg::onClickBtnOneForAllFingerMask() {
         for (const std::string &pose_name : all_pose) {
             std::cout << "--> About to render [" << std::setw(2) << pose_name << "] ----------------------------------------------" << std::endl;
             bool failure = true;
-            for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+            for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
                 const std::string &model_name = it->first;
                 quick_thetas_list &quick_thetas = pose_thetas_map[model_name];
                 quick_mask_list &quick_mask = pose_mask_map[model_name];

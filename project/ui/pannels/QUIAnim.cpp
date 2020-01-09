@@ -5,7 +5,7 @@
 
 using namespace ui;
 
-QUIAnim::QUIAnim(const std::string &project_path, models_map &models, signs::Signer *signer)
+QUIAnim::QUIAnim(const std::string &project_path, smodel::models_map &models, signs::Signer *signer)
   : project_path_(project_path),
     models_(models),
     signer_(signer)
@@ -31,7 +31,7 @@ void QUIAnim::Init() {
     layout->setAlignment(Qt::AlignTop);
 
     layout->addLayout(InitHead());
-    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+    for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
         std::string name = it->first;
         smodel::ModelCtrl *model = it->second;
         layout->addLayout(InitTimeline(name, model));
@@ -284,7 +284,7 @@ void QUIAnim::UpdateSignsScrollContent() {
 
 void QUIAnim::UpdateModel(const int &frame) {
     int at_frame = frame == -1 ? this->curr_frame : frame;
-    for (models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
+    for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); ++it) {
         this->UpdateModel(it->first, calcThetas(it->first, at_frame));
     }
 }
@@ -343,7 +343,7 @@ const smodel::Thetas QUIAnim::calcThetas(const std::string &name, const int &cur
 void QUIAnim::ConverSignDataToKeypoints(signs::SignData &sign_data, const int &start) {
     signs::Frame frame_count = sign_data.FrameCount();
     for (signs::Frame i = 0; i < frame_count; ++i) {
-        models_map::iterator it = models_.begin();
+        smodel::models_map::iterator it = models_.begin();
         while (it != models_.end()) {
             signs::FrameParams params = sign_data.GetParams(it->first, i);
             if (params.size() > 0) {
@@ -425,7 +425,7 @@ void QUIAnim::onClickKey(const QString &name) {
 }
 
 void QUIAnim::onClickKeyThree() {
-    for (models_map::iterator it = models_.begin(); it != models_.end(); it++) {
+    for (smodel::models_map::iterator it = models_.begin(); it != models_.end(); it++) {
         this->onClickKey(QString("%1").arg(it->first.c_str()));
     }
 }

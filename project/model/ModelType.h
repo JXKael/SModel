@@ -9,8 +9,8 @@
 namespace smodel {
 
 #define BODY "body"
-#define RIGHT_HAND "right_hand"
-#define LEFT_HAND "left_hand"
+#define RIGHT_HAND "right-hand"
+#define LEFT_HAND "left-hand"
 
 #define BLOCK_UNDEFINED 32767
 #define VEC3_DIM 3
@@ -20,6 +20,7 @@ namespace smodel {
 typedef Eigen::Vector3f vec3;
 typedef Eigen::Matrix4f mat4;
 
+// 声明
 struct Sphere;
 struct Bone;
 struct Dof;
@@ -42,8 +43,8 @@ enum DofType {
 };
 
 enum DofFreeType {
-    kFree = 0,
-    kUnderCtrl = 1
+    kFree = 0,      // 自由度修改无限制
+    kUnderCtrl = 1  // 该model作为子model时，类型为1的自由度不可修改，跟随父物体
 };
 
 enum AxisType {

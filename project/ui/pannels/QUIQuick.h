@@ -28,12 +28,12 @@ class QUIQuick: public QDialog {
     Q_OBJECT
 public:
     explicit QUIQuick(QWidget *patent = 0);
-    QUIQuick(const std::string &project_path, models_map &models, renderers_map &renderers, renderers_state_map &renderers_state);
+    QUIQuick(const std::string &project_path, smodel::models_map &models, renderers_map &renderers, renderers_state_map &renderers_state);
     ~QUIQuick();
 
 private:
     const std::string project_path_;
-    models_map &models_;
+    smodel::models_map &models_;
     renderers_map &renderers_;
     renderers_state_map &renderers_state_;
 

@@ -2,7 +2,9 @@
 #define MODEL_CONFIG_LOADER_H
 
 #include "ModelType.h"
+#include "ModelCtrl.h"
 #include "utils/csv.h"
+
 #include <vector>
 #include <map>
 #include <iostream>
@@ -13,12 +15,15 @@ namespace smodel {
 class ModelConfigLoader {
 public:
     ModelConfigLoader();
+    ModelCtrlMap LoadComposedModel(const std::string &path);
     Centers LoadCenters(const std::string &path);
     Bones LoadBones(const std::string &path);
     Dofs LoadDofs(const std::string &path);
     Blocks LoadBlocks(const std::string &path);
     BlockColors ModelConfigLoader::LoadBlockColors(const std::string &path);
 
+
+    /// >>> 转换函数
 private:
     smodel::vec3 convertToVec3(const std::string &str);
     smodel::mat4 convertToMat4(const std::string &str);

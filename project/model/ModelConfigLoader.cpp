@@ -1,8 +1,41 @@
 ﻿#include "ModelConfigLoader.h"
+//#include "../utils/SMLog.h"
 
 using namespace smodel;
 
 ModelConfigLoader::ModelConfigLoader() {}
+
+ModelCtrlMap ModelConfigLoader::LoadComposedModel(const std::string &path) {
+    ModelCtrlMap model_ctrls;
+    try {
+        csv::CSVReader<5> reader(path);
+        reader.read_header(csv::ignore_extra_column, "id", "name", "data_dir", "parent_id", "to_boneid");
+        int id, parent_id, to_boneid;
+        std::string name, data_dir;
+        while (reader.read_row(id, name, data_dir, parent_id, to_boneid)) {
+            // create a model
+            Model *model = new Model(); // clear in ModelCtrl
+            // create a semantics;
+            ModelSemantics *model_semantics = new ModelSemantics(model);
+            // create a model ctrl
+            ModelCtrl *model_ctrl = new ModelCtrl(id, name, data_dir, parent_id, to_boneid); // clear in ModelsManager
+
+            model_ctrl->SetModel(model);
+            model_ctrl->SetModelSemantics(model_semantics);
+
+            model_ctrls[id] = model_ctrl;
+        }
+    }
+    catch (csv::error::can_not_open_file err) {
+        std::cout << "!!!无法打开文件: " << err.what() << std::endl;
+        //utils::SMLog::logger().print(utils::kError, "无法打开文件");
+        //utils::SMLog::logger().print(err.what());
+    }
+    catch (...) {
+        //utils::SMLog::logger().print(utils::kError, "未知错误");
+    }
+    return model_ctrls;
+}
 
 Centers ModelConfigLoader::LoadCenters(const std::string &path) {
     Centers centers;
@@ -102,6 +135,8 @@ BlockColors ModelConfigLoader::LoadBlockColors(const std::string &path) {
 
     return block_colors;
 }
+
+/// >>> 转换函数
 
 smodel::vec3 ModelConfigLoader::convertToVec3(const std::string &str) {
     smodel::vec3 res = smodel::vec3::Zero();

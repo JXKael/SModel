@@ -41,8 +41,6 @@
 #define PANNEL_WIDTH 350
 #define BTN_COLUMN_NUM 4
 
-typedef std::map<std::string, smodel::ModelCtrl *> models_map;
-
 typedef std::map<int, std::shared_ptr<ui::GLRenderer>> renderers_map;
 typedef std::map<int, bool> renderers_state_map;
 

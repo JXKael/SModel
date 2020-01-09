@@ -33,25 +33,25 @@ GLWidget::~GLWidget() {
     doneCurrent();
 }
 
-void GLWidget::SetupRenderers(models_map &models) {
+void GLWidget::SetupRenderers(smodel::models_map &models) {
     this->ClearRenderer();
     // 模型渲染
     int idx = 0;
-    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+    for (smodel::models_map::iterator it = models.begin(); it != models.end(); ++it) {
         renderers[idx] = std::make_shared<ui::ConvolutionRenderer>(project_path_, it->second);
         renderers[idx]->SetName(it->second->GetName());
         renderers_state[idx] = true;
         ++idx;
     }
     // mask渲染
-    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+    for (smodel::models_map::iterator it = models.begin(); it != models.end(); ++it) {
         renderers[idx] = std::make_shared<ui::ConvolutionRendererMask>(project_path_, it->second);
         renderers[idx]->SetName(it->second->GetName() + "_mask");
         renderers_state[idx] = false;
         ++idx;
     }
     // finger_mask渲染
-    for (models_map::iterator it = models.begin(); it != models.end(); ++it) {
+    for (smodel::models_map::iterator it = models.begin(); it != models.end(); ++it) {
         renderers[idx] = std::make_shared<ui::ConvolutionRendererFingerMask>(project_path_, it->second);
         renderers[idx]->SetName(it->second->GetName() + "_finger_mask");
         renderers_state[idx] = false;
